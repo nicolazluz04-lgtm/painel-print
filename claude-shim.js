@@ -80,6 +80,24 @@
       b.style.cssText = "position:fixed;left:12px;bottom:12px;z-index:99999;padding:8px 12px;border-radius:8px;border:1px solid #444;background:#111;color:#eee;font:12px sans-serif;cursor:pointer;opacity:.85";
       b.onclick = async function () { await sb.auth.signOut(); location.reload(); };
       document.body.appendChild(b);
+      var t = document.createElement("button");
+      t.textContent = "Trocar senha";
+      t.style.cssText = b.style.cssText + ";left:" + (b.offsetWidth + 20) + "px";
+      t.onclick = function () {
+        var box = document.createElement("div");
+        box.style.cssText = "position:fixed;inset:0;background:#000a;z-index:100000;display:flex;align-items:center;justify-content:center";
+        box.innerHTML = '<form style="background:#161616;color:#eee;padding:24px;border-radius:12px;display:grid;gap:10px;min-width:280px;font:14px sans-serif"><b>Trocar senha</b><input name=p type=password autocomplete=new-password minlength=8 placeholder="Nova senha (mín. 8)" required style="padding:8px"><input name=q type=password autocomplete=new-password placeholder="Repita a nova senha" required style="padding:8px"><span id=m style="font-size:12px"></span><button style="padding:8px;cursor:pointer">Salvar</button></form>';
+        document.body.appendChild(box);
+        box.onclick = function (ev) { if (ev.target === box) box.remove(); };
+        box.querySelector("form").onsubmit = async function (ev) {
+          ev.preventDefault(); var f = ev.target, m = box.querySelector("#m");
+          if (f.p.value !== f.q.value) { m.style.color = "#f87171"; m.textContent = "As senhas não conferem."; return; }
+          var r = await sb.auth.updateUser({ password: f.p.value });
+          if (r.error) { m.style.color = "#f87171"; m.textContent = r.error.message; }
+          else { m.style.color = "#4ade80"; m.textContent = "Senha alterada!"; setTimeout(function () { box.remove(); }, 1200); }
+        };
+      };
+      document.body.appendChild(t);
     });
   });
 })();

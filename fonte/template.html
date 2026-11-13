@@ -1,0 +1,241 @@
+<title>Painel Print Socorro</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>try{if((localStorage.getItem('theme')||'dark')==='dark')document.documentElement.classList.add('dark')}catch(e){document.documentElement.classList.add('dark')}</script>
+<style>
+.leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-tile-container,.leaflet-pane>svg,.leaflet-pane>canvas,.leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer{position:absolute;left:0;top:0}
+.leaflet-container{overflow:hidden;position:relative;outline-offset:1px;-webkit-tap-highlight-color:transparent}
+.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow{user-select:none;-webkit-user-drag:none}
+.leaflet-container .leaflet-overlay-pane svg{max-width:none!important;max-height:none!important}
+.leaflet-container img.leaflet-tile,.leaflet-container img.leaflet-marker-icon{max-width:none!important;max-height:none!important;width:auto;padding:0}
+.leaflet-pane{z-index:400}.leaflet-tile-pane{z-index:200}.leaflet-overlay-pane{z-index:400}.leaflet-shadow-pane{z-index:500}.leaflet-marker-pane{z-index:600}.leaflet-tooltip-pane{z-index:650}.leaflet-popup-pane{z-index:700}
+.leaflet-map-pane canvas{z-index:100}.leaflet-map-pane svg{z-index:200}
+.leaflet-control{position:relative;z-index:800;pointer-events:visiblePainted;pointer-events:auto;float:left;clear:both}
+.leaflet-top,.leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}.leaflet-top{top:0}.leaflet-right{right:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}
+.leaflet-right .leaflet-control{float:right}.leaflet-top .leaflet-control{margin-top:10px}.leaflet-left .leaflet-control{margin-left:10px}.leaflet-bottom .leaflet-control{margin-bottom:10px}.leaflet-right .leaflet-control{margin-right:10px}
+.leaflet-zoom-animated{transform-origin:0 0}.leaflet-interactive{cursor:pointer}.leaflet-grab{cursor:grab}.leaflet-dragging .leaflet-grab{cursor:move}
+.leaflet-bar{box-shadow:0 1px 5px rgba(0,0,0,.65);border-radius:4px}.leaflet-bar a{background:#fff;border-bottom:1px solid #ccc;width:26px;height:26px;line-height:26px;display:block;text-align:center;text-decoration:none;color:#000}
+.leaflet-bar a:first-child{border-top-left-radius:4px;border-top-right-radius:4px}.leaflet-bar a:last-child{border-bottom-left-radius:4px;border-bottom-right-radius:4px;border-bottom:none}
+.leaflet-popup{position:absolute;text-align:center;margin-bottom:20px}.leaflet-popup-content-wrapper{padding:1px;text-align:left;border-radius:12px;background:#fff;color:#333;box-shadow:0 3px 14px rgba(0,0,0,.4)}
+.leaflet-popup-content{margin:13px 24px 13px 20px;line-height:1.3;font-size:13px;min-height:1px}.leaflet-popup-tip-container{width:40px;height:20px;position:absolute;left:50%;margin-left:-20px;overflow:hidden;pointer-events:none}
+.leaflet-popup-tip{width:17px;height:17px;padding:1px;margin:-10px auto 0;transform:rotate(45deg);background:#fff}.leaflet-popup-close-button{position:absolute;top:0;right:0;padding:4px 4px 0 0;width:24px;height:24px;text-align:center;text-decoration:none;color:#757575}
+.leaflet-tooltip{position:absolute;padding:6px;background:#fff;border:1px solid #fff;border-radius:3px;color:#222;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.4);pointer-events:none}
+.leaflet-div-icon{background:#fff;border:1px solid #666}.leaflet-control-attribution{background:rgba(255,255,255,.8);margin:0;padding:0 5px;font-size:11px}
+</style>
+<style type="text/tailwindcss">@import "tailwindcss";
+
+
+/* ---------- Tema claro — identidade Print ---------- */
+:root {
+  --font-heading: "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Manrope", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+
+  --bg: #F2F5F1;
+  --bg-alt: #FAFBF8;
+  --bg-hover: #E8F0E6;
+  --bg-card: #FFFFFF;
+  --border: #E2E7E0;
+  --border-bright: #D2D9D0;
+  --text: #2B3230;
+  --text-muted: #505050;
+  --text-soft: #7A7A7A;
+
+  --accent-green: #146E1F;
+  --accent-green-glow: rgba(20,110,31,0.10);
+  --accent-yellow: #B8860B;
+  --accent-yellow-glow: rgba(184,134,11,0.12);
+  --accent-red: #C62828;
+  --accent-orange: #D97706;
+  --accent-ok: #1A8E28;
+  --brand-dark: #0C4817;
+  --brand-vivid: #25D647;
+  --sidebar-w: 240px;
+}
+
+/* ---------- Tema escuro (mantido) ---------- */
+.dark {
+  --bg: #080f0d;
+  --bg-alt: #0b1411;
+  --bg-hover: #12211a;
+  --bg-card: #0f1a16;
+  --border: #1b2b23;
+  --border-bright: #2a3f33;
+  --text: #e8f2ec;
+  --text-muted: #87a094;
+  --text-soft: #5b766a;
+
+  --accent-green: #2dc62d;
+  --accent-green-glow: rgba(45,198,45,0.12);
+  --accent-yellow: #f5c518;
+  --accent-yellow-glow: rgba(245,197,24,0.12);
+  --accent-red: #ef4444;
+  --accent-orange: #f97316;
+  --accent-ok: #22c55e;
+}
+
+@theme inline {
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+  --color-print-green: var(--accent-green);
+  --color-print-green-dark: #0C4817;
+  --color-print-yellow: var(--accent-yellow);
+  --color-surface: var(--bg);
+  --color-surface-alt: var(--bg-alt);
+  --color-surface-hover: var(--bg-hover);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-soft: var(--text-soft);
+}
+
+html, body { color-scheme: light; }
+html.dark, html.dark body { color-scheme: dark; }
+
+body {
+  font-family: var(--font-body), Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ---------- Números ---------- */
+.font-mono, .tabular-nums {
+  font-family: var(--font-mono) !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* ---------- Sidebar com barra institucional ---------- */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg-alt);
+  border-right: 1px solid var(--border-bright);
+  transition: background 0.3s ease;
+}
+
+html.dark .sidebar {
+  background: linear-gradient(180deg, #0C4817 0px, #146E1F 118px, #0b1411 118px);
+}
+html.dark .sidebar > div:first-child { border-bottom-color: rgba(255,255,255,.16) !important; }
+html:not(.dark) .sidebar {
+  background: linear-gradient(180deg, #0C4817 0px, #146E1F 118px, #FAFBF8 118px);
+}
+html:not(.dark) .sidebar > div:first-child { border-bottom-color: rgba(255,255,255,.18) !important; }
+
+/* ---------- Cards ---------- */
+.card-glow {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+.card-glow:hover {
+  border-color: var(--accent-green) !important;
+  box-shadow: 0 10px 26px -20px rgba(12,72,23,.55);
+}
+html.dark .card-glow:hover {
+  box-shadow: 0 0 0 1px var(--accent-green-glow), 0 8px 26px -18px var(--accent-green);
+}
+
+/* ---------- Botões de acento ---------- */
+html.dark .bg-print-green,
+html.dark .bg-print-green-dark {
+  color: #0a0f0c !important;
+  font-weight: 700;
+}
+
+/* ---------- Mapas ---------- */
+.dark .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.82) contrast(0.92) saturate(0.85);
+}
+.dark .leaflet-container { background: #070d0b; }
+.dark .leaflet-control-attribution { background: rgba(8,15,13,0.72) !important; color: #6f8a79 !important; }
+.dark .leaflet-control-attribution a { color: #9ab3a2 !important; }
+.dark .leaflet-bar a { background: #0f1a16 !important; color: #e8f2ec !important; border-color: #1b2b23 !important; }
+.dark .leaflet-bar a:hover { background: #12211a !important; }
+.dark .leaflet-popup-content-wrapper, .dark .leaflet-popup-tip { background: #0f1a16; color: #e8f2ec; border: 1px solid #2a3f33; }
+
+/* ---------- Animações ---------- */
+@keyframes pulse-dot { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.6); opacity: 0.6; } }
+@keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(2.5); opacity: 0; } }
+.pulse-dot { animation: pulse-dot 1.5s ease-in-out infinite; }
+.pulse-ring { animation: pulse-ring 1.5s ease-out infinite; }
+
+@keyframes blink-urgent { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+.blink-urgent { animation: blink-urgent 1s ease-in-out infinite; }
+
+@keyframes sla-pulse-green { 0%,100% { box-shadow: 0 0 0 0 rgba(37,214,71,0.45); } 50% { box-shadow: 0 0 0 6px rgba(37,214,71,0); } }
+@keyframes sla-pulse-yellow { 0%,100% { box-shadow: 0 0 0 0 rgba(245,179,1,0.5); } 50% { box-shadow: 0 0 0 6px rgba(245,179,1,0); } }
+@keyframes sla-pulse-red { 0%,100% { box-shadow: 0 0 0 0 rgba(229,57,53,0.55); } 50% { box-shadow: 0 0 0 8px rgba(229,57,53,0); } }
+.sla-pulse-green { animation: sla-pulse-green 2.2s ease-out infinite; }
+.sla-pulse-yellow { animation: sla-pulse-yellow 1.6s ease-out infinite; }
+.sla-pulse-red { animation: sla-pulse-red 1s ease-out infinite; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot, .pulse-ring, .blink-urgent,
+  .sla-pulse-green, .sla-pulse-yellow, .sla-pulse-red { animation: none; }
+}
+
+
+/* ---------- Card de O.S. (redesenho) ---------- */
+.oscard{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:11px 12px;position:relative;color:var(--text);overflow:hidden}
+.oscard::before{content:'';position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,#1E88E5,#0D47A1)}
+.oscard.crit::before{background:linear-gradient(90deg,#E53935,#B3261E)}
+.oscard.warn::before{background:linear-gradient(90deg,#F5B301,#C98C00)}
+.oscard.ok::before{background:linear-gradient(90deg,#25D647,#146E1F)}
+.osc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.osc-os{font-family:ui-monospace,monospace;font-size:12px;font-weight:700;color:#fff}
+.osc-flag{font-size:8px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:99px;border:1px solid}
+.osc-stage{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#0a1210;border:1px solid #172822;border-radius:10px;padding:8px 10px;margin-bottom:9px}
+.osc-stage img{width:86px;height:42px;object-fit:contain;filter:invert(1) brightness(1.15);mix-blend-mode:screen;flex:none}
+.osc-plate{text-align:right;line-height:1.15}
+.osc-lbl{font-size:7px;letter-spacing:.16em;color:#6b8378;text-transform:uppercase}
+.osc-placa{font-family:ui-monospace,monospace;font-size:15px;font-weight:700;color:#fff}
+.osc-tax{display:inline-block;font-size:7px;font-weight:800;padding:2px 6px;border-radius:99px;margin-top:3px;letter-spacing:.06em;text-transform:uppercase}
+.osc-rows{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}
+.osc-rows div{display:flex;justify-content:space-between;font-size:9.5px}
+.osc-rows span{color:#6b8378}.osc-rows b{color:#e8f2ec;font-weight:600;max-width:60%;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.osc-clock{border-top:1px solid #1a2b24;padding-top:7px;display:flex;justify-content:space-between;align-items:baseline}
+.osc-time{font-family:ui-monospace,monospace;font-size:17px;font-weight:700}
+.osc-acts{display:flex;gap:5px;margin-top:8px}
+.osc-btn{flex:1;background:linear-gradient(180deg,#2fd14f,#1a9b34);color:#04120a;font-size:9.5px;font-weight:800;border-radius:8px;padding:8px 6px;border:none;cursor:pointer;box-shadow:0 6px 14px -10px rgba(37,214,71,.9)}
+.osc-sq{width:32px;background:transparent;border:1px solid #22372e;border-radius:8px;color:#8fb3a3;font-size:11px;cursor:pointer}
+.osc-type{font-size:7.5px;letter-spacing:.12em;text-transform:uppercase;color:#5d786b;margin-top:7px}
+
+/* card segue o tema (dia/noite) */
+.dark .oscard{background:#0c1614 !important;color:#e8f2ec}
+.dark .oscard [style*="var(--text)"]{color:#e8f2ec !important}
+.dark .oscard [style*="var(--text-muted)"]{color:#8fa1a9 !important}
+
+.veic-img{width:230px;height:115px;object-fit:contain;flex:none}
+.dark .veic-img{filter:invert(1) brightness(1.15);mix-blend-mode:screen}
+
+/* Card carregado: borda piscando */
+@keyframes card-blink{0%,100%{box-shadow:0 0 0 2px rgba(229,57,53,.85),0 0 14px rgba(229,57,53,.35)}50%{box-shadow:0 0 0 2px rgba(229,57,53,.12),0 0 4px rgba(229,57,53,0)}}
+.oscard.carregado{animation:card-blink 1.2s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.oscard.carregado{animation:none;box-shadow:0 0 0 2px rgba(229,57,53,.6)}}
+
+/* Contraste dos textos no card (tema claro) */
+html:not(.dark) .oscard [style*="var(--text)"]{color:#121816 !important}
+html:not(.dark) .oscard [style*="var(--text-muted)"]{color:#3E4A46 !important}
+html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
+</style>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11/dist/index.global.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-is/18.3.1/umd/react-is.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>window.react=window.React;</script>
+<script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script>
+/* o código do painel (out/app.js) é inserido aqui pelo build.sh */
+</script>

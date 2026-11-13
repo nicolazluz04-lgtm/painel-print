@@ -1,0 +1,40 @@
+# Cria as tags e releases de versão listadas em .github/versoes.txt (formato: "vX.Y.Z <commit>").
+# Para lançar uma versão nova: atualize CHANGELOG.md e fonte/package.json, adicione a linha em versoes.txt e faça push.
+name: Versões
+
+on:
+  push:
+    branches: [main]
+    paths: [".github/versoes.txt"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tags:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Criar tags e releases que faltam
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          while read -r tag sha; do
+            [ -z "$tag" ] && continue
+            if gh release view "$tag" >/dev/null 2>&1; then
+              echo "$tag já existe"; continue
+            fi
+            ver="${tag#v}"
+            awk -v v="$ver" '
+              $0 ~ "^## \\[" v "\\]" {on=1; next}
+              on && /^## \[/ {exit}
+              on {print}
+            ' CHANGELOG.md > notas.md
+            [ -s notas.md ] || echo "Versão $tag" > notas.md
+            gh release create "$tag" --target "$sha" --title "$tag" --notes-file notas.md
+            echo "criada $tag em $sha"
+          done < .github/versoes.txt

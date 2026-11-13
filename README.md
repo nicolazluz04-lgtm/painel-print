@@ -37,7 +37,7 @@ docs/
    ```
    Isso regenera o `index.html` na raiz.
 3. Faça commit e push na branch `main`. O GitHub Pages publica em 1–2 minutos.
-4. Atualize o `CHANGELOG.md`, suba a versão em `fonte/package.json` e crie a tag (`git tag vX.Y.Z && git push --tags`).
+4. Para lançar uma versão: atualize o `CHANGELOG.md`, suba a versão em `fonte/package.json` e acrescente a linha `vX.Y.Z <commit>` em `.github/versoes.txt`. Depois do push, o GitHub Actions cria a tag e a release sozinho.
 
 `claude-shim.js` (login e ligação com o Supabase) e `config.js` (endereço e chave **pública** do Supabase) ficam na raiz e são editados diretamente.
 

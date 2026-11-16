@@ -266,6 +266,43 @@ function route(method, path, q, body) {
     if (b === "posicoes") { const dd = (S.sascar && S.sascar.data) || {}; return ok({ data: dd, total: Object.keys(dd).length, credencial_ok: true, atualizado: (S.sascar && S.sascar.updated) || 0 }); }
     return ok({ data: [], credencial_ok: true });
   }
+  if (a === "relatorio" && b === "gerencial2") {
+    // Resumo executivo (mesma lógica do backend de produção, implementação cmwazfbea00qnhlujmlyko70f)
+    const dias = parseInt(q.get("dias") || "30", 10) || 0;
+    const agora = new Date();
+    const esc = v => String(v == null ? "" : v).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    let ords = S.ordens;
+    if (dias > 0) { const corte = agora.getTime() - dias * 86400000; ords = ords.filter(o => { const dt = parseDt(o.abertura || o.created_at); return !dt || dt.getTime() >= corte; }); }
+    const total = ords.length, val = o => Number(o.valor) || 0;
+    const custo = ords.reduce((t, o) => t + val(o), 0);
+    const abertas = ords.filter(o => !o.fechamento && !o.cancelado).length;
+    const slas = ords.filter(o => o.fechamento && o.sla_minutos).map(o => Number(o.sla_minutos));
+    const slaMed = slas.length ? slas.reduce((x, y) => x + y, 0) / slas.length : 0;
+    const cp = {}; ords.forEach(o => { const p = String(o.placa || "").toUpperCase(); if (p) cp[p] = (cp[p] || 0) + 1; });
+    const nP = Object.keys(cp).length, reinc = nP ? Object.values(cp).filter(v => v > 1).length / nP * 100 : 0;
+    const agg = fn => { const m = {}; ords.forEach(o => { const k = fn(o) || "Não informado"; const x = (m[k] = m[k] || { qtd: 0, custo: 0 }); x.qtd++; x.custo += val(o); }); return Object.entries(m).sort((x, y) => y[1].qtd - x[1].qtd); };
+    const TL = { mecanico: "Mecânico", eletrico: "Elétrico", eletronica: "Eletrônica", eletrica_mecanica: "Elétrica/Mecânica", borracharia: "Borracharia", guincho: "Guincho" };
+    const porModelo = agg(o => o.modelo).slice(0, 5), porUnid = agg(o => o.operacao).slice(0, 5);
+    const porTipo = agg(o => TL[o.tipo_servico || ""] || o.tipo_servico || "Outros");
+    const porFalha = agg(o => String(o.descricao || "").slice(0, 28) || null).slice(0, 6);
+    const brl0 = v => Number(v || 0).toLocaleString("pt-BR", { maximumFractionDigits: 0 });
+    const barra = (nome, qtd, cv, maxq, cor = "#25D647") => "<tr><td class='nm'>" + esc(String(nome).slice(0, 26)) + "</td><td class='tk'><div class='fl' style='width:" + (maxq ? Math.round(qtd / maxq * 100) : 0) + "%;background:" + cor + "'></div></td><td class='vl'>" + qtd + "</td><td class='cs'>R$ " + brl0(cv) + "</td></tr>";
+    const rows = (lst, cor) => lst.map(([k, v]) => barra(k, v.qtd, v.custo, lst.length ? lst[0][1].qtd : 1, cor)).join("");
+    const topM = porModelo[0] ? porModelo[0][0] : "—", topU = porUnid[0] ? porUnid[0][0] : "—", topF = porFalha[0] ? porFalha[0][0] : "—";
+    const shareU = porUnid[0] && total ? Math.round(porUnid[0][1].qtd / total * 100) : 0;
+    const ins = "<li><b>" + esc(topU) + "</b> concentra " + shareU + "% das O.S. do período.</li><li><b>" + esc(topM) + "</b> é o modelo com mais ocorrências (" + (porModelo[0] ? porModelo[0][1].qtd : 0) + ").</li><li><b>" + esc(topF) + "</b> lidera as falhas registradas: revisar reduziria reincidência.</li>";
+    const dataTxt = agora.toLocaleString("pt-BR", { timeZone: TZ, day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    const html = "<!doctype html><html lang='pt-BR'><head><meta charset='utf-8'><title>Resumo Executivo — Print</title><style>" +
+      "body{font-family:Arial,Helvetica,sans-serif;color:#2B3230;margin:22px;background:#fff}.hd{display:flex;justify-content:space-between;border-bottom:3px solid #0C4817;padding-bottom:9px}.t{font-size:20px;font-weight:800;color:#0C4817;margin:0}.s{font-size:10px;color:#7A7A7A}.k{display:flex;gap:7px;margin:12px 0}.k div{flex:1;border:1px solid #E2E7E0;border-radius:7px;padding:8px 10px}.k span{font-size:8px;letter-spacing:.8px;color:#7A7A7A}.k b{display:block;font-size:17px;color:#0C4817;margin-top:2px}.sec{font-size:9px;font-weight:800;letter-spacing:.9px;color:#146E1F;margin:12px 0 5px;border-bottom:1px solid #E2E7E0;padding-bottom:3px}table.w{width:100%;border-collapse:collapse;font-size:9px}td{padding:3px 5px}td.nm{width:110px;color:#2B3230;font-weight:600}td.tk div{height:6px;border-radius:3px;background:#25D647}td.vl{width:28px;text-align:right;font-weight:700;font-family:monospace}td.cs{width:66px;text-align:right;color:#7A7A7A;font-family:monospace}.tipo{display:flex;justify-content:space-between;font-size:9px;padding:2px 0;color:#505050}.tipo .q{font-weight:700;color:#2B3230;font-family:monospace}.ins{background:#F7FBF6;border:1px solid #CBE9CF;border-radius:6px;padding:8px 10px;margin-top:4px}.ins ul{margin:0;padding-left:14px}.ins li{font-size:9px;color:#505050;line-height:1.6}.ft{margin-top:10px;border-top:1px solid #E2E7E0;padding-top:6px;font-size:8px;color:#7A7A7A}@media print{body{margin:8mm}}" +
+      "</style></head><body><div class='hd'><div><div style='font-size:9px;letter-spacing:1.6px;color:#7A7A7A'>PRINT TRANSPORTADORA</div><h1 class='t'>RESUMO EXECUTIVO DA MANUTENÇÃO</h1><div class='s'>Control Tower Service · últimos " + (dias > 0 ? dias : "todos") + " dias · " + dataTxt + "</div></div><div style='text-align:right;font-size:9px;color:#7A7A7A'>Emitido por<br><b>" + esc(QUEM()) + "</b></div></div>" +
+      "<div class='k'><div><span>O.S. NO PERÍODO</span><b>" + total + "</b></div><div><span>EM ABERTO</span><b>" + abertas + "</b></div><div><span>CUSTO TOTAL</span><b>R$ " + brl0(custo) + "</b></div><div><span>SLA MÉDIO</span><b>" + (slaMed ? Math.floor(slaMed / 60) + "h" + pad(Math.floor(slaMed % 60)) : "—") + "</b></div><div><span>REINCIDÊNCIA</span><b>" + reinc.toFixed(1).replace(".", ",") + "%</b></div></div>" +
+      "<div class='sec'>FALHAS POR MODELO DE VEÍCULO</div><table class='w'>" + (rows(porModelo) || "<tr><td>Sem dados</td></tr>") + "</table>" +
+      "<div class='sec'>ORDENS POR UNIDADE</div><table class='w'>" + (rows(porUnid, "#1E88E5") || "<tr><td>Sem dados</td></tr>") + "</table>" +
+      "<div class='sec'>PRINCIPAIS FALHAS (PARETO)</div><table class='w'>" + (rows(porFalha, "#C62828") || "<tr><td>Sem dados</td></tr>") + "</table>" +
+      "<div class='sec'>TIPO DE MANUTENÇÃO</div>" + (porTipo.slice(0, 6).map(([k, v]) => "<div class='tipo'><span class='t'>" + esc(k) + "</span><span class='q'>" + v.qtd + "</span></div>").join("") || "<div class='tipo'>Sem dados</div>") +
+      "<div class='sec'>INSIGHTS GERENCIAIS</div><div class='ins'><ul>" + ins + "</ul></div><div class='ft'>Print · Control Tower Service</div></body></html>";
+    return ok({ html, total, dias });
+  }
   if (a === "escalonamento") {
     const cfg = { ...DEF_CONFIG, ...(S.config || {}) };
     const hS = Number(cfg.escalonamento_supervisor_h) || 2, hG = Number(cfg.escalonamento_gerencia_h) || 4;

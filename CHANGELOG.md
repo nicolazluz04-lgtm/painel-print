@@ -2,6 +2,16 @@
 
 Formato: [versionamento semântico](https://semver.org/lang/pt-BR/) — MAIOR.MENOR.CORREÇÃO.
 
+## [1.4.0] — 16/11/2026
+### Sincronizado com a produção do CodeWords (commit a3a5805, backend cmwazfbea00qnhlujmlyko70f)
+- Site de produção comparado arquivo por arquivo: código idêntico ao pacote de 09/11; nada a trazer.
+- Dados: 20 O.S. voltam à situação da produção (14 em aberto), com histórico e datas. Cópia de segurança das versões anteriores guardada no banco.
+- Dados: cadastro da frota (889 placas), envio de peça pendente e raio de busca de 25 km.
+### Adicionado
+- Relatório gerencial (botão "Gerar PDF Gerencial" no Dashboard), que existia só no backend do CodeWords.
+### Corrigido
+- Selo "Aguardando orçamento" mostrava códigos crus e desalinhava o cartão no Atendimento.
+
 ## [1.3.0] — 13/11/2026
 ### Organização
 - Repositório passa a guardar o código-fonte (`fonte/`), o banco (`supabase/`) e a documentação (`docs/`), além do site publicado.

@@ -1,1 +1,6 @@
-fonte/node_modules
+fonte/
+supabase/
+docs/
+.github/
+README.md
+CHANGELOG.md

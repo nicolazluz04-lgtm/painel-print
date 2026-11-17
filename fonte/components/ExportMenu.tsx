@@ -5,7 +5,22 @@ import { calcInsights, pedirIA } from "../insights.js";
 const card: any = { background: "var(--bg-card, #111)", border: "1px solid var(--border-bright, #444)", borderRadius: 12, boxShadow: "0 8px 30px rgba(0,0,0,.4)", color: "var(--text, #eee)" };
 const corPri: any = { alta: "#dc2626", media: "#d97706", baixa: "#16a34a" };
 
+// Celular (< 640 px): os botões flutuantes (Exportar Excel, sino e Exportar) viram um único menu.
+const CELULAR = "(max-width: 639px)";
+function useCelular() {
+  const mq = typeof window !== "undefined" && window.matchMedia ? window.matchMedia(CELULAR) : null;
+  const [c, setC] = useState(!!(mq && mq.matches));
+  useEffect(() => {
+    if (!mq) return;
+    const f = () => setC(mq.matches);
+    mq.addEventListener ? mq.addEventListener("change", f) : mq.addListener(f);
+    return () => { mq.removeEventListener ? mq.removeEventListener("change", f) : mq.removeListener(f); };
+  }, []);
+  return c;
+}
+
 export default function ExportMenu() {
+  const celular = useCelular();
   const [aberto, setAberto] = useState(false);
   const [iaAberta, setIaAberta] = useState(false);
   const [msg, setMsg] = useState("");
@@ -41,11 +56,19 @@ export default function ExportMenu() {
     { t: "Prestadores (Excel)", d: "Cadastro completo com tipo e faturamento", f: () => xl(exportarPrestadoresExcel, "Excel de prestadores") },
     { t: "Relatório gerencial (PDF)", d: "Gráficos, últimos carros, placas recorrentes e análise da IA", f: pdf },
   ];
+  const acoes: any = (window as any).__painelAcoes || {};
+  const naoLidas = Number(acoes.naoLidas || 0);
+  const temIA = !!(window as any).PRINT_CONFIG?.AI_ENDPOINT;
+  const extras = celular ? [
+    ...(acoes.exportarExcel ? [{ t: "Exportar Excel", d: "Relatório analítico em Excel", f: () => { setAberto(false); acoes.exportarExcel(); } }] : []),
+    ...(acoes.notificacoes ? [{ t: "Notificações" + (naoLidas > 0 ? ` (${naoLidas})` : ""), d: "Avisos de SLA e mudanças de O.S.", f: () => { setAberto(false); acoes.notificacoes(); } }] : []),
+    ...(temIA ? [{ t: "🤖 Assistente IA", d: "Pendências e carros para vigiar", f: () => { setAberto(false); setIaAberta(v => !v); } }] : []),
+  ] : [];
   const btn: any = { padding: "10px 16px", borderRadius: 999, color: "#fff", border: "none", fontWeight: 800, fontSize: 12, boxShadow: "0 4px 14px rgba(0,0,0,.4)", cursor: "pointer" };
   const stat = (mb.status && mb.status !== "ok") || (sc.status && !/^ok/.test(sc.status || "ok")) ? [mb.status && mb.status !== "ok" ? "Mapa: " + mb.status : "", sc.status && !/^ok/.test(sc.status) ? "Sascar: " + sc.status : ""].filter(Boolean).join(" · ") : "";
   return (
-    <div style={{ position: "fixed", right: "max(16px, env(safe-area-inset-right, 0px))", bottom: "max(16px, env(safe-area-inset-bottom, 0px))", zIndex: 1500, fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
-      {stat && <div style={{ ...card, padding: "6px 10px", fontSize: 10, maxWidth: 300 }}>{stat}</div>}
+    <div style={{ position: "fixed", right: "max(16px, env(safe-area-inset-right, 0px))", bottom: "max(16px, env(safe-area-inset-bottom, 0px))", zIndex: 45, maxWidth: "calc(100vw - 32px)", fontFamily: "inherit", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+      {stat && <div style={{ ...card, padding: "4px 8px", fontSize: 10, maxWidth: 300 }}>{stat}</div>}
       {iaAberta && (
         <div style={{ ...card, width: "min(360px, calc(100vw - 32px))", maxHeight: "70vh", overflowY: "auto", padding: 12 }}>
           <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 6 }}>🤖 Assistente de operação</div>
@@ -66,9 +89,9 @@ export default function ExportMenu() {
         </div>
       )}
       {aberto && (
-        <div style={{ ...card, width: 300, overflow: "hidden" }}>
-          {itens.map(it => (
-            <button key={it.t} disabled={busy} onClick={it.f} style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 12px", background: "transparent", border: "none", borderBottom: "1px solid var(--border, #333)", color: "inherit", cursor: busy ? "wait" : "pointer" }}>
+        <div style={{ ...card, width: "min(300px, calc(100vw - 32px))", overflow: "hidden" }}>
+          {[...extras, ...itens].map(it => (
+            <button key={it.t} disabled={busy} onClick={it.f} style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", background: "transparent", border: "none", borderBottom: "1px solid var(--border, #333)", color: "inherit", cursor: busy ? "wait" : "pointer" }}>
               <div style={{ fontSize: 12, fontWeight: 700 }}>{it.t}</div>
               <div style={{ fontSize: 10, opacity: .65 }}>{it.d}</div>
             </button>
@@ -77,8 +100,10 @@ export default function ExportMenu() {
       )}
       {msg && <div style={{ ...card, maxWidth: 300, padding: "8px 12px", fontSize: 11 }}>{msg}</div>}
       <div style={{ display: "flex", gap: 8 }}>
-        {(window as any).PRINT_CONFIG?.AI_ENDPOINT ? <button onClick={() => { setIaAberta(v => !v); setAberto(false); }} style={{ ...btn, background: "#2563eb" }}>{iaAberta ? "Fechar IA" : "🤖 IA"}</button> : null}
-        <button onClick={() => { setAberto(v => !v); setIaAberta(false); }} style={{ ...btn, background: "#16a34a" }}>{aberto ? "Fechar" : "⬇ Exportar"}</button>
+        {temIA && !celular ? <button onClick={() => { setIaAberta(v => !v); setAberto(false); }} style={{ ...btn, background: "#2563eb" }}>{iaAberta ? "Fechar IA" : "🤖 IA"}</button> : null}
+        {celular
+          ? <button data-menu-flutuante onClick={() => { setAberto(v => !v); setIaAberta(false); }} aria-expanded={aberto} aria-label="Menu de ações" style={{ ...btn, background: "#16a34a", minHeight: 44 }}>{aberto ? "✕ Fechar" : "☰ Ações"}{!aberto && naoLidas > 0 && <span style={{ marginLeft: 8, background: "var(--accent-red, #ef4444)", borderRadius: 999, padding: "0 6px", fontSize: 10 }}>{naoLidas}</span>}</button>
+          : <button onClick={() => { setAberto(v => !v); setIaAberta(false); }} style={{ ...btn, background: "#16a34a" }}>{aberto ? "Fechar" : "⬇ Exportar"}</button>}
       </div>
     </div>
   );

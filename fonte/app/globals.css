@@ -214,10 +214,11 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
   --sp-6: 32px;
   --sidebar-mini: 76px;      /* menu lateral recolhido */
   --pagina-pad: var(--sp-5); /* margem interna das telas */
+  --fab-reserva: 128px;      /* espaço no fim das telas para os botões flutuantes não cobrirem conteúdo */
   --raio: 12px;
 }
 @media (max-width: 639px) {
-  :root { --sidebar-mini: 64px; --pagina-pad: var(--sp-3); }
+  :root { --sidebar-mini: 64px; --pagina-pad: var(--sp-3); --fab-reserva: 88px; }
 }
 
 /* ---------- Estrutura da página ---------- */
@@ -225,10 +226,10 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
 @media (max-width: 1023px) {                     /* tablet/celular: o menu aberto passa por cima, não empurra */
   .painel-conteudo { margin-left: var(--sidebar-mini) !important; }
 }
-.painel-main { padding: var(--pagina-pad); }
+.painel-main { padding: var(--pagina-pad); padding-bottom: calc(var(--pagina-pad) + var(--fab-reserva)); }
 
 /* ---------- Cartões e janelas ---------- */
-.cartao { padding: var(--sp-5); border-radius: var(--raio); }
+.cartao { padding: var(--sp-5); border-radius: var(--raio); isolation: isolate; } /* camadas do mapa ficam dentro do cartão, abaixo dos botões flutuantes */
 .janela { padding: var(--sp-5); }
 @media (max-width: 639px) { .cartao, .janela { padding: var(--sp-4); } }
 

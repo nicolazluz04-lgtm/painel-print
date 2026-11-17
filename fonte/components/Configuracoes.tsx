@@ -88,7 +88,7 @@ export default function Configuracoes() {
           <h2 className="text-base font-bold" style={{ color: "var(--text)" }}>Configurações</h2>
           <div className="text-xs" style={{ color: "var(--text-muted)" }}>Visível apenas para administradores</div>
         </div>
-        <button onClick={salvar} className="px-5 py-2 rounded-lg text-xs font-bold cursor-pointer" style={{ background: "var(--accent-green)", color: "#fff" }}>Salvar configurações</button>
+        <button onClick={salvar} className="px-6 py-2 rounded-lg text-xs font-bold cursor-pointer" style={{ background: "var(--accent-green)", color: "#fff" }}>Salvar configurações</button>
       </div>
       {msg && <div className="mb-3 px-3 py-2 rounded-lg text-[11px] font-bold" style={{ background: "rgba(37,214,71,.12)", color: "#146E1F" }}>{msg}</div>}
 

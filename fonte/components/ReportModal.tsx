@@ -57,10 +57,10 @@ export default function ReportModal({ ordem, onClose }: { ordem: any | null; onC
             <div className="text-[9px] uppercase tracking-widest font-bold" style={{ color: "var(--text-muted)" }}>Report</div>
             <h2 className="text-base font-bold" style={{ color: "var(--text)" }}>O.S. {ordem.os || "—"} {ordem.placa ? <span className="font-mono" style={{ color: "var(--accent-green)" }}>· {ordem.placa}</span> : null}</h2>
           </div>
-          <button onClick={onClose} className="px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}>Fechar</button>
+          <button onClick={onClose} className="px-3 py-2 rounded-lg text-xs font-bold cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}>Fechar</button>
         </div>
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
-          {carregando ? (<p className="text-center py-10 text-sm" style={{ color: "var(--text-muted)" }}>Carregando...</p>) : lista.length === 0 ? (<p className="text-center py-10 text-sm" style={{ color: "var(--text-muted)" }}>Nenhum registro ainda. Escreva o primeiro abaixo.</p>) : (
+          {carregando ? (<p className="text-center py-8 text-sm" style={{ color: "var(--text-muted)" }}>Carregando...</p>) : lista.length === 0 ? (<p className="text-center py-8 text-sm" style={{ color: "var(--text-muted)" }}>Nenhum registro ainda. Escreva o primeiro abaixo.</p>) : (
             lista.map((n: any, i: number) => (
               <div key={n.id || i} className="py-3" style={{ borderBottom: "1px dashed var(--border)" }}>
                 <div className="flex items-baseline gap-2 flex-wrap">

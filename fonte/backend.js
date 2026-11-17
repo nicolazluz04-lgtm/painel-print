@@ -195,6 +195,8 @@ function route(method, path, q, body) {
       const it = byId(b); if (!it) return fail(404, "Ordem não encontrada");
       if (!c && method === "PUT") {
         const upd = body || {}, o = { ...it, ...upd };
+        const cancelada = x => !!x.cancelado || x.status === "Cancelada";
+        if (ROLE !== "admin" && cancelada(o) !== cancelada(it)) return fail(403, "Só um administrador cancela O.S. Use \"Excluir\" para solicitar o cancelamento.");
         ["motorista", "operador", "modelo", "marca", "rodovia", "localizacao"].forEach(k => { if (k in upd && upd[k]) o[k] = pc(upd[k]); });
         if (upd.placa) o.placa = normPlaca(upd.placa);
         if ("os" in upd) o.os = String(o.os || "").trim().replace(/^0+/, "") || "0";
@@ -219,18 +221,26 @@ function route(method, path, q, body) {
         put("ordens", o); addLog("OS_FECHADA", o.os, `Resultado: ${body.resultado}`, QUEM());
         return ok({ success: true, data: o });
       }
+      // Cancelamento em duas etapas: o gerente solicita; o admin aprova (ou cancela direto).
       if (c === "cancelar" && d === "aprovar") {
+        if (ROLE !== "admin") return fail(403, "Só um administrador aprova cancelamentos.");
+        if (it.cancelado) return fail(400, "Esta O.S. já está cancelada.");
         if (!it.cancelamento_solicitado) return fail(400, "Nenhum cancelamento pendente para esta O.S.");
-        const o = { ...it, cancelado: true, motivo_cancelamento: it.cancelamento_motivo || "", status: "Cancelada", cancelamento_aprovado_por: QUEM(), cancelamento_solicitado: false, historico: [...(it.historico || []), { hora: now(), etapa: "CANCELADA", quem: QUEM() }] };
+        const ag = now();
+        const o = { ...it, cancelado: true, motivo_cancelamento: it.cancelamento_motivo || "", status: "Cancelada", fechamento: it.fechamento || ag, cancelamento_aprovado_por: QUEM(), cancelamento_aprovado_em: ag, cancelamento_solicitado: false, historico: [...(it.historico || []), { hora: ag, etapa: "CANCELADA", quem: QUEM() }] };
         put("ordens", o); addLog("OS_CANCELADA", o.os, `Aprovado por ${QUEM()}`, QUEM()); return ok({ success: true, data: o });
       }
       if (c === "cancelar" && method === "POST") {
+        if (it.cancelado) return fail(400, "Esta O.S. já está cancelada.");
         const ag = now();
         const o = { ...it, cancelamento_solicitado: true, cancelamento_motivo: body.motivo, cancelamento_solicitado_por: QUEM(), cancelamento_solicitado_em: ag, historico: [...(it.historico || []), { hora: ag, etapa: "CANCELAMENTO_SOLICITADO", quem: QUEM() }] };
-        // como o acesso é único (admin), o cancelamento é concluído na hora, como no original para admin
-        o.cancelado = true; o.status = "Cancelada"; o.fechamento = ag; o.cancelamento_aprovado_por = QUEM(); o.cancelamento_aprovado_em = ag; o.motivo_cancelamento = body.motivo;
+        if (ROLE !== "admin") {
+          put("ordens", o); addLog("OS_CANCELAMENTO_SOLICITADO", o.os, `Motivo: ${body.motivo}`, QUEM());
+          return ok({ success: true, pendente: true, data: o });
+        }
+        o.cancelado = true; o.status = "Cancelada"; o.fechamento = ag; o.cancelamento_solicitado = false; o.cancelamento_aprovado_por = QUEM(); o.cancelamento_aprovado_em = ag; o.motivo_cancelamento = body.motivo;
         o.historico.push({ hora: ag, etapa: "CANCELADA", quem: QUEM(), acao: "Cancelada pelo admin" });
-        put("ordens", o); addLog("OS_CANCELAMENTO_SOLICITADO", o.os, `Motivo: ${body.motivo}`, QUEM());
+        put("ordens", o); addLog("OS_CANCELADA", o.os, `Cancelada pelo admin. Motivo: ${body.motivo}`, QUEM());
         return ok({ success: true, pendente: false, data: o });
       }
       if (c === "notas") {

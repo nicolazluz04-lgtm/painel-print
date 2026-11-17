@@ -83,3 +83,37 @@ drop policy if exists kv_del on public.kv;
 create policy kv_del on public.kv for delete to authenticated
   using (public.kv_can_write(collection, 'delete'));
 
+-- Verdadeiro/falso no estilo do JavaScript do painel (null, false, 0 e "" contam como falso).
+create or replace function public.jsonb_truthy(v jsonb) returns boolean
+language sql immutable set search_path = '' as $$
+  select coalesce(v not in ('null'::jsonb, 'false'::jsonb, '0'::jsonb, '""'::jsonb), false);
+$$;
+
+-- ── Guarda de O.S.: só admin cancela (o gerente apenas solicita) ────────────────
+-- Vale para quem acessa pela internet (papéis authenticated/anon). O servidor (service_role, pg_cron) não passa por aqui.
+create or replace function public.kv_guard() returns trigger
+language plpgsql set search_path = '' as $$
+declare
+  cancelada_antes boolean := false;
+  cancelada_agora boolean;
+begin
+  if current_user not in ('authenticated', 'anon') then return new; end if;
+  if tg_op = 'UPDATE' and (new.collection is distinct from old.collection or new.id is distinct from old.id) then
+    raise exception 'Não é permitido mudar a coleção ou o id de um registro.' using errcode = '42501';
+  end if;
+  if new.collection = 'ordens' and not public.is_admin() then
+    if tg_op = 'UPDATE' then
+      cancelada_antes := public.jsonb_truthy(old.data -> 'cancelado')
+                         or coalesce(old.data ->> 'status', '') = 'Cancelada';
+    end if;
+    cancelada_agora := public.jsonb_truthy(new.data -> 'cancelado')
+                       or coalesce(new.data ->> 'status', '') = 'Cancelada';
+    if cancelada_agora is distinct from cancelada_antes then
+      raise exception 'Só um administrador cancela O.S. O gerente solicita o cancelamento.' using errcode = '42501';
+    end if;
+  end if;
+  return new;
+end $$;
+drop trigger if exists kv_guard on public.kv;
+create trigger kv_guard before insert or update on public.kv for each row execute function public.kv_guard();
+

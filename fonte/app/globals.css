@@ -156,7 +156,7 @@ html.dark .bg-print-green-dark {
 
 
 /* ---------- Card de O.S. (redesenho) ---------- */
-.oscard{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:11px 12px;position:relative;color:var(--text);overflow:hidden}
+.oscard{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--raio);padding:var(--sp-3);min-width:0;position:relative;color:var(--text);overflow:hidden}
 .oscard::before{content:'';position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,#1E88E5,#0D47A1)}
 .oscard.crit::before{background:linear-gradient(90deg,#E53935,#B3261E)}
 .oscard.warn::before{background:linear-gradient(90deg,#F5B301,#C98C00)}
@@ -185,7 +185,12 @@ html.dark .bg-print-green-dark {
 .dark .oscard [style*="var(--text)"]{color:#e8f2ec !important}
 .dark .oscard [style*="var(--text-muted)"]{color:#8fa1a9 !important}
 
-.veic-img{width:230px;height:115px;object-fit:contain;flex:none}
+/* Grade dos cartões de O.S. (Atendimento): 1 coluna no celular, 2 no tablet, 3 até 1600 px, 4 acima */
+.grade-os{display:grid;gap:var(--sp-3);grid-template-columns:minmax(0,1fr)}
+@media (min-width:640px){.grade-os{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1200px){.grade-os{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (min-width:1601px){.grade-os{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.veic-img{width:min(230px,52%);height:auto;aspect-ratio:2/1;object-fit:contain;flex:none}
 .dark .veic-img{filter:invert(1) brightness(1.15);mix-blend-mode:screen}
 
 /* Card carregado: borda piscando */

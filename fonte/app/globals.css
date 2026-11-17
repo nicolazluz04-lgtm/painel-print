@@ -197,3 +197,32 @@ html.dark .bg-print-green-dark {
 html:not(.dark) .oscard [style*="var(--text)"]{color:#121816 !important}
 html:not(.dark) .oscard [style*="var(--text-muted)"]{color:#3E4A46 !important}
 html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
+
+/* ---------- Escala de espaçamento (use só estes valores) ---------- */
+/* 4 · 8 · 12 · 16 · 24 · 32 px. Nas classes do Tailwind: 1 · 2 · 3 · 4 · 6 · 8. */
+:root {
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sidebar-mini: 76px;      /* menu lateral recolhido */
+  --pagina-pad: var(--sp-5); /* margem interna das telas */
+  --raio: 12px;
+}
+@media (max-width: 639px) {
+  :root { --sidebar-mini: 64px; --pagina-pad: var(--sp-3); }
+}
+
+/* ---------- Estrutura da página ---------- */
+.painel-conteudo { min-width: 0; }              /* conteúdo largo rola dentro da própria caixa, nunca a página */
+@media (max-width: 1023px) {                     /* tablet/celular: o menu aberto passa por cima, não empurra */
+  .painel-conteudo { margin-left: var(--sidebar-mini) !important; }
+}
+.painel-main { padding: var(--pagina-pad); }
+
+/* ---------- Cartões e janelas ---------- */
+.cartao { padding: var(--sp-5); border-radius: var(--raio); }
+.janela { padding: var(--sp-5); }
+@media (max-width: 639px) { .cartao, .janela { padding: var(--sp-4); } }

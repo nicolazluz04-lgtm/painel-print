@@ -170,15 +170,19 @@ export default function MapaFrota({ posicoes, ordens, bases }: Props) {
         @media (prefers-reduced-motion: reduce) { @keyframes mfr-pulse { from {} to {} } }
       `}</style>
       <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
-      <div style={{ position: "absolute", left: 10, bottom: 10, zIndex: 500, background: "rgba(12,17,20,.88)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 10, padding: "8px 10px", fontSize: 10, color: "#e8f2ec", backdropFilter: "blur(4px)", lineHeight: 1.7 }}>
-        <div style={{ fontSize: 8.5, letterSpacing: ".12em", textTransform: "uppercase", opacity: .6, marginBottom: 3 }}>Legenda</div>
-        <div style={{ fontSize: 9, opacity: .75, marginBottom: 3 }}>{((window as any).__sascarInfo && (window as any).__sascarInfo.updated) ? "Sascar · atualizado " + new Date((window as any).__sascarInfo.updated).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Sascar · aguardando dados"}{(window as any).__sascarInfo && (window as any).__sascarInfo.status && (window as any).__sascarInfo.status !== "ok" && String((window as any).__sascarInfo.status).indexOf("ok") !== 0 ? " · " + (window as any).__sascarInfo.status : ""}</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 9, height: 9, borderRadius: 2, background: COR_RODANDO, display: "inline-block" }} />Em movimento <b style={{ marginLeft: "auto", fontFamily: "ui-monospace" }}>{contagem.rodando}</b></div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 9, height: 9, borderRadius: 2, background: COR_PARADO, display: "inline-block" }} />Parado <b style={{ marginLeft: "auto", fontFamily: "ui-monospace" }}>{contagem.parado}</b></div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2, paddingTop: 3, borderTop: "1px solid rgba(255,255,255,.12)" }}><span style={{ width: 9, height: 9, borderRadius: 2, background: "#f5c518", display: "inline-block" }} />Base</div><div style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 9, height: 9, borderRadius: 2, background: "#FF6A00", display: "inline-block" }} />Ponto de apoio</div>
+      <div style={{ position: "absolute", left: 10, bottom: 10, zIndex: 500, background: "rgba(12,17,20,.88)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 12, padding: "8px 12px", fontSize: 10, color: "#e8f2ec", backdropFilter: "blur(4px)", lineHeight: 1.5, minWidth: 140 }}>
+        <div style={{ fontSize: 8.5, letterSpacing: ".12em", textTransform: "uppercase", opacity: .6, marginBottom: 4 }}>Legenda</div>
+        <div style={{ fontSize: 9, opacity: .75, marginBottom: 4 }}>{((window as any).__sascarInfo && (window as any).__sascarInfo.updated) ? "Sascar · atualizado " + new Date((window as any).__sascarInfo.updated).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "Sascar · aguardando dados"}{(window as any).__sascarInfo && (window as any).__sascarInfo.status && (window as any).__sascarInfo.status !== "ok" && String((window as any).__sascarInfo.status).indexOf("ok") !== 0 ? " · " + (window as any).__sascarInfo.status : ""}</div>
+        <div style={{ display: "grid", gridTemplateColumns: "8px minmax(0,1fr) auto", alignItems: "center", columnGap: 8, rowGap: 4 }}>
+          <span style={{ width: 8, height: 8, borderRadius: 2, background: COR_RODANDO }} /><span>Em movimento</span><b style={{ fontFamily: "ui-monospace", textAlign: "right" }}>{contagem.rodando}</b>
+          <span style={{ width: 8, height: 8, borderRadius: 2, background: COR_PARADO }} /><span>Parado</span><b style={{ fontFamily: "ui-monospace", textAlign: "right" }}>{contagem.parado}</b>
+          <span style={{ gridColumn: "1 / -1", borderTop: "1px solid rgba(255,255,255,.12)" }} />
+          <span style={{ width: 8, height: 8, borderRadius: 2, background: "#f5c518" }} /><span style={{ gridColumn: "2 / -1" }}>Base</span>
+          <span style={{ width: 8, height: 8, borderRadius: 2, background: "#FF6A00" }} /><span style={{ gridColumn: "2 / -1" }}>Ponto de apoio</span>
+        </div>
       </div>
       <div style={{ position: "absolute", top: 10, right: 10, zIndex: 500, width: 236 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(12,17,20,.92)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 9, padding: "6px 9px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(12,17,20,.92)", border: "1px solid rgba(255,255,255,.18)", borderRadius: 8, padding: "0 8px" }}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e8f2ec" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.6-3.6" /></svg>
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar placa" style={{ background: "transparent", border: "none", outline: "none", color: "#e8f2ec", fontSize: 11, width: "100%" }} />
         </div>

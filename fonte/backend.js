@@ -37,14 +37,28 @@ const aberta = o => !!o.abertura && !o.fechamento && !o.cancelado;
 const pc = v => String(v || "").trim().toLowerCase().replace(/(^|[^a-zà-ÿ])([a-zà-ÿ])/g, (m, a, b) => a + b.toUpperCase());
 const normPlaca = v => String(v || "").trim().toUpperCase();
 
+// ── permissões (espelho de public.kv_can_write em supabase/migrations/005_permissoes_por_papel.sql) ──
+// O banco é quem decide; aqui só evitamos mudar a tela quando o banco vai recusar a gravação.
+const TODAS = ["insert", "update", "delete"];
+const ESCRITA_GERENTE = { ordens: ["insert", "update"], prestadores: TODAS, pecas_envio: TODAS, acionamentos: TODAS, ocorrencias: ["insert", "update"], notificacoes: ["insert", "update"], log: ["insert"] };
+export function podeGravar(colecao, acao) {
+  if (ROLE === "admin") return true;
+  if (ROLE === "gerente") return (ESCRITA_GERENTE[colecao] || []).includes(acao);
+  return false;
+}
+class SemPermissao extends Error { constructor(msg) { super(msg || "Sem permissão para alterar. Fale com um administrador."); this.status = 403; } }
+function exigirGravacao(colecao, acao) { if (!podeGravar(colecao, acao)) throw new SemPermissao(); }
+
 // ── persistência ──
 function put(col, obj) {
   const i = S[col].findIndex(x => x.id === obj.id);
+  exigirGravacao(col, i >= 0 ? "update" : "insert");
   if (i >= 0) { if (!obj._k && S[col][i]._k) obj._k = S[col][i]._k; S[col][i] = obj; } else S[col].unshift(obj);
   if (DB) { const { _k, ...clean } = obj; DB.collection(col).doc(_k || obj.id).set(clean).catch(() => {}); }
   return obj;
 }
 function del(col, id) {
+  exigirGravacao(col, "delete");
   const x = S[col].find(i => i.id === id);
   S[col] = S[col].filter(i => i.id !== id);
   if (DB) DB.collection(col).doc((x && x._k) || id).delete().catch(() => {});
@@ -243,7 +257,7 @@ function route(method, path, q, body) {
     if (c === "ler") { const x = S.notificacoes.find(i => i.id === b); if (x) put("notificacoes", { ...x, lida: true }); return ok({ success: true }); }
   }
   if (a === "configuracoes") {
-    if (method === "PUT") { S.config = { ...DEF_CONFIG, ...S.config, ...body }; saveConfig(); }
+    if (method === "PUT") { exigirGravacao("config", "update"); S.config = { ...DEF_CONFIG, ...S.config, ...body }; saveConfig(); }
     const cfg = { ...DEF_CONFIG, ...S.config }; return ok({ ...cfg, data: cfg });
   }
   if (a === "pecas-envio") {
@@ -355,6 +369,6 @@ window.fetch = async (input, init) => {
   if (mth !== "GET" && (!podeEditar || (seg[0] === "configuracoes" && ROLE !== "admin")))
     return J({ detail: "Sem permissão para alterar. Fale com um administrador." }, 403);
   let res;
-  try { res = route(((init && init.method) || "GET").toUpperCase(), path, new URLSearchParams(qs || ""), body); } catch (e) { res = { s: 500, b: { detail: String(e && e.message || e) } }; }
+  try { res = route(((init && init.method) || "GET").toUpperCase(), path, new URLSearchParams(qs || ""), body); } catch (e) { res = { s: (e && e.status) || 500, b: { detail: String(e && e.message || e) } }; }
   return new Response(JSON.stringify(res.b), { status: res.s, headers: { "Content-Type": "application/json" } });
 };

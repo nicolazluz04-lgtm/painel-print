@@ -29,16 +29,8 @@ const ETAPAS: {status:string;label:string;desc:string;checklist:string[];next:st
   {status:"Serviço em execução",label:"5 · Serviço em Execução",desc:"Socorro em andamento",checklist:["Acompanhar andamento do serviço"],next:"Veículo liberado"},
 ];
 
-function getToken(): string {
-  return typeof window !== "undefined" ? (localStorage.getItem("token") || "") : "";
-}
 function getAuthHeaders(): Record<string, string> {
   return { "Content-Type": "application/json" };
-}
-function withToken(url: string): string {
-  const t = getToken();
-  const sep = url.includes("?") ? "&" : "?";
-  return t ? `${url}${sep}token=${encodeURIComponent(t)}` : url;
 }
 
 interface Prestador { id: string; nome: string; cnpj: string; cidade: string; estado: string; tipo_servico: string; telefone: string; socorro_24h: boolean; fatura: boolean; status?: string; lat: number | null; lng: number | null; }
@@ -55,7 +47,7 @@ let setGlobalLoggedIn: (v: boolean) => void = () => {};
 async function fetcher(url: string, opts?: RequestInit) {
   const headers = getAuthHeaders();
   try {
-    const res = await fetch(`${API}${withToken(url)}`, { headers, ...opts });
+    const res = await fetch(`${API}${url}`, { headers, ...opts });
     if (res.status === 401) { localStorage.removeItem("token"); localStorage.removeItem("user"); void 0; return {}; }
     const txt = await res.text();
     if (!txt) return {};
@@ -282,7 +274,7 @@ export default function Dashboard() {
           <SegPanel titulo="Geral" cor="#e8e6e1" icone="G" s={stats?.indicadores_segmento?.geral}/>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-          <Card title="PDF Gerencial" sub="Imprimir ou salvar em PDF"><div className="flex items-center gap-2 mb-2"><span className="text-[10px]" style={{color:"var(--text-muted)"}}>Período</span><select id="pdf-dias" defaultValue="30" className="px-2 py-1 rounded-lg text-[10px] border cursor-pointer" style={{background:"var(--bg-alt)",borderColor:"var(--border)",color:"var(--text)"}}><option value="7">7 dias</option><option value="30">30 dias</option><option value="90">90 dias</option><option value="0">Tudo</option></select></div><button onClick={async()=>{try{const r=await fetch("/api/relatorio/gerencial2?dias="+((document.getElementById("pdf-dias") as HTMLSelectElement)?.value||"30")+"&token="+encodeURIComponent(getToken()));const j=await r.json();if(!j||!j.html){alert("Nao foi possivel gerar o relatorio");return;}const w=window.open("","_blank");if(w){w.document.open();w.document.write(j.html);w.document.close();}}catch(e){alert("Nao foi possivel gerar o relatorio");}}} className="w-full py-2.5 rounded-lg text-xs font-bold cursor-pointer" style={{background:"var(--accent-green)",color:"#fff"}}>Gerar PDF Gerencial</button><p className="text-[10px] mt-2 leading-relaxed" style={{color:"var(--text-muted)"}}>Abre em nova aba. No navegador use Ctrl+P e escolha “Salvar como PDF”.</p><p className="text-[10px] mt-1" style={{color:"var(--text-muted)"}}>Inclui maiores problemas, soluções sugeridas e ficha por placa.</p></Card>
+          <Card title="PDF Gerencial" sub="Imprimir ou salvar em PDF"><div className="flex items-center gap-2 mb-2"><span className="text-[10px]" style={{color:"var(--text-muted)"}}>Período</span><select id="pdf-dias" defaultValue="30" className="px-2 py-1 rounded-lg text-[10px] border cursor-pointer" style={{background:"var(--bg-alt)",borderColor:"var(--border)",color:"var(--text)"}}><option value="7">7 dias</option><option value="30">30 dias</option><option value="90">90 dias</option><option value="0">Tudo</option></select></div><button onClick={async()=>{try{const r=await fetch("/api/relatorio/gerencial2?dias="+((document.getElementById("pdf-dias") as HTMLSelectElement)?.value||"30"));const j=await r.json();if(!j||!j.html){alert("Nao foi possivel gerar o relatorio");return;}const w=window.open("","_blank");if(w){w.document.open();w.document.write(j.html);w.document.close();}}catch(e){alert("Nao foi possivel gerar o relatorio");}}} className="w-full py-2.5 rounded-lg text-xs font-bold cursor-pointer" style={{background:"var(--accent-green)",color:"#fff"}}>Gerar PDF Gerencial</button><p className="text-[10px] mt-2 leading-relaxed" style={{color:"var(--text-muted)"}}>Abre em nova aba. No navegador use Ctrl+P e escolha “Salvar como PDF”.</p><p className="text-[10px] mt-1" style={{color:"var(--text-muted)"}}>Inclui maiores problemas, soluções sugeridas e ficha por placa.</p></Card>
           <Card title="Orçado × Realizado" sub="Por prestador">{orcado?.por_prestador?.length>0?(<div className="space-y-1.5">{(orcado.por_prestador||[]).slice(0,4).map((p:any)=>(<div key={p.nome} className="flex items-center gap-2 text-[10px]"><span className="truncate" style={{color:"var(--text)",width:86}}>{p.nome}</span><div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{background:"var(--bg-alt)"}}><div style={{width:Math.min(100,(p.realizado/(p.orcado||p.realizado||1))*100)+"%",height:"100%",background:p.desvio_pct>0?"#E53935":"#25D647"}}/></div><span className="font-mono font-bold" style={{color:p.desvio_pct>0?"#C62828":"#146E1F"}}>{p.desvio_pct>0?"+":""}{p.desvio_pct}%</span></div>))}</div>):(<p className="text-center text-[10px] py-4" style={{color:"var(--text-muted)"}}>Sem valor orçado lançado</p>)}</Card>
           <Card title="Escalonamento" sub="O.S. parada há 2h ou mais">{escalamento?.data?.length>0?(<div className="space-y-1">{(escalamento.data||[]).slice(0,4).map((e:any)=>(<div key={e.id} className="flex items-center gap-2 text-[10px]"><span className="w-1.5 h-1.5 rounded-full shrink-0" style={{background:e.nivel==="GERENCIA"?"#E53935":"#F5B301"}}/><span className="font-mono font-bold" style={{color:"var(--text)"}}>{e.placa||e.os}</span><span className="truncate" style={{color:"var(--text-muted)"}}>{e.status}</span><span className="ml-auto font-mono font-bold" style={{color:"#C62828"}}>{e.horas_parada}h</span></div>))}</div>):(<p className="text-center text-[10px] py-4" style={{color:"var(--text-muted)"}}>Nenhuma O.S. parada</p>)}</Card>
         </div>

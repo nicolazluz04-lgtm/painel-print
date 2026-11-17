@@ -145,10 +145,8 @@ function alerts() {
   S.ordens.filter(aberta).forEach(o => {
     const a = parseDt(o.abertura); if (!a) return;
     const min = r1((nowD - a) / 60000);
-    if (min > 60) {
-      out.push({ ...o, minutos_aberto: min });
-      if (!S.log.some(e => e.evento === "SLA_ALERTA_60MIN" && e.os === o.os)) addLog("SLA_ALERTA_60MIN", o.os, `O.S. aberta há ${Math.floor(min)} min`, "Sistema");
-    }
+    // Só consulta: o alerta SLA_ALERTA_60MIN no log é gravado pelo servidor (pg_cron → registrar_alertas_sla()).
+    if (min > 60) out.push({ ...o, minutos_aberto: min });
   });
   return { data: out, total: out.length };
 }
@@ -264,7 +262,15 @@ function route(method, path, q, body) {
   }
   if (a === "notificacoes") {
     if (!b) return ok({ data: S.notificacoes, nao_lidas: S.notificacoes.filter(n => !n.lida).length });
-    if (c === "ler") { const x = S.notificacoes.find(i => i.id === b); if (x) put("notificacoes", { ...x, lida: true }); return ok({ success: true }); }
+    if (c === "ler") {
+      const x = S.notificacoes.find(i => i.id === b);
+      if (x) {
+        // Operador não grava no banco: marca só nesta tela (a notificação é a mesma para todos).
+        if (podeGravar("notificacoes", "update")) put("notificacoes", { ...x, lida: true });
+        else S.notificacoes = S.notificacoes.map(n => (n.id === b ? { ...n, lida: true } : n));
+      }
+      return ok({ success: true });
+    }
   }
   if (a === "configuracoes") {
     if (method === "PUT") { exigirGravacao("config", "update"); S.config = { ...DEF_CONFIG, ...S.config, ...body }; saveConfig(); }
@@ -291,6 +297,7 @@ function route(method, path, q, body) {
     return ok({ data: [], credencial_ok: true });
   }
   if (a === "relatorio" && b === "gerencial2") {
+    if (ROLE !== "admin" && ROLE !== "gerente") return fail(403, "O relatório gerencial é só para gerentes e administradores.");
     // Resumo executivo (mesma lógica do backend de produção, implementação cmwazfbea00qnhlujmlyko70f)
     const dias = parseInt(q.get("dias") || "30", 10) || 0;
     const agora = new Date();
@@ -376,7 +383,8 @@ window.fetch = async (input, init) => {
     } catch (e) { return J({ detail: String(e && e.message || e) }, 400); }
   }
   const podeEditar = ROLE === "admin" || ROLE === "gerente";
-  if (mth !== "GET" && (!podeEditar || (seg[0] === "configuracoes" && ROLE !== "admin")))
+  const soMarcaLida = seg[0] === "notificacoes" && seg[2] === "ler";   // operador marca como lida só na tela
+  if (mth !== "GET" && !soMarcaLida && (!podeEditar || (seg[0] === "configuracoes" && ROLE !== "admin")))
     return J({ detail: "Sem permissão para alterar. Fale com um administrador." }, 403);
   let res;
   try { res = route(((init && init.method) || "GET").toUpperCase(), path, new URLSearchParams(qs || ""), body); } catch (e) { res = { s: (e && e.status) || 500, b: { detail: String(e && e.message || e) } }; }

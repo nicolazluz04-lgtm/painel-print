@@ -117,3 +117,50 @@ end $$;
 drop trigger if exists kv_guard on public.kv;
 create trigger kv_guard before insert or update on public.kv for each row execute function public.kv_guard();
 
+-- ── Alertas de SLA gravados pelo servidor (antes eram gravados por GET /alerts no navegador) ──
+-- Converte o texto de data do painel em timestamptz; sem fuso = horário de Brasília (como parseDt do backend.js).
+create or replace function public.kv_parse_ts(t text) returns timestamptz
+language plpgsql stable set search_path = '' as $$
+begin
+  if t is null or t = '' then return null; end if;
+  if t ~ '([zZ]|[+-]\d\d:?\d\d)$' then return t::timestamptz; end if;
+  return (t || '-03:00')::timestamptz;
+exception when others then
+  return null;
+end $$;
+
+-- Grava SLA_ALERTA_60MIN no log para cada O.S. aberta há mais de 60 min que ainda não tem esse alerta.
+create or replace function public.registrar_alertas_sla() returns integer
+language plpgsql security definer set search_path = '' as $$
+declare n integer;
+begin
+  with abertas as (
+    select k.data ->> 'os' as os_txt, k.data -> 'os' as os, public.kv_parse_ts(k.data ->> 'abertura') as abertura
+      from public.kv k
+     where k.collection = 'ordens'
+       and not public.jsonb_truthy(k.data -> 'fechamento')
+       and not public.jsonb_truthy(k.data -> 'cancelado')
+  ), novos as (
+    select gen_random_uuid()::text as nid, a.*
+      from abertas a
+     where a.abertura is not null
+       and now() - a.abertura > interval '60 minutes'
+       and not exists (select 1 from public.kv l
+                        where l.collection = 'log'
+                          and l.data ->> 'evento' = 'SLA_ALERTA_60MIN'
+                          and l.data ->> 'os' = a.os_txt)
+  )
+  insert into public.kv (collection, id, data)
+  select 'log', nid, jsonb_build_object(
+           'id', nid, 'evento', 'SLA_ALERTA_60MIN', 'os', os,
+           'detalhe', 'O.S. aberta há ' || floor(extract(epoch from now() - abertura) / 60)::int || ' min',
+           'quem', 'Sistema',
+           'created_at', to_char(now() at time zone 'America/Sao_Paulo', 'YYYY-MM-DD"T"HH24:MI:SS.US') || '-03:00')
+    from novos;
+  get diagnostics n = row_count;
+  return n;
+end $$;
+revoke execute on function public.registrar_alertas_sla() from public, anon, authenticated;
+
+select cron.unschedule('sla-alertas') where exists (select 1 from cron.job where jobname = 'sla-alertas');
+select cron.schedule('sla-alertas', '*/5 * * * *', 'select public.registrar_alertas_sla();');

@@ -13,6 +13,7 @@ Navegador ──(abre)──► GitHub Pages: index.html + claude-shim.js + conf
                                      ├─ Vault: credenciais Sascar, segredo do agendador
                                      ├─ pg_cron (a cada 2 min) ──► Edge Function sascar-sync
                                      │                               └─► Sascar SasIntegra (SOAP)
+                                     ├─ pg_cron (a cada 5 min) ──► registrar_alertas_sla() (SQL: log SLA_ALERTA_60MIN)
                                      └─ Edge Function admin-users (só admin)
 ```
 

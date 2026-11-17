@@ -232,6 +232,17 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
 .janela { padding: var(--sp-5); }
 @media (max-width: 639px) { .cartao, .janela { padding: var(--sp-4); } }
 
+/* ---------- Alvos de toque: mínimo 36 px no computador e 44 px no celular ---------- */
+:root { --alvo: 36px; }
+@media (max-width: 639px) { :root { --alvo: 44px; } }
+:where(button, select, textarea, [role=button],
+  input:not([type=checkbox], [type=radio], [type=hidden], [type=file], [type=range], [type=color])):not(.leaflet-container *) {
+  min-height: var(--alvo);
+}
+:where(button, select, [role=button]):not(.leaflet-container *) { min-width: var(--alvo); }
+/* caixa de seleção: o alvo é o rótulo inteiro */
+label:has(> input[type=checkbox]), label:has(> input[type=radio]) { min-height: var(--alvo); min-width: var(--alvo); }
+
 /* ---------- Tabelas no celular: lista de cartões (O.S. e Prestadores) ---------- */
 .lista-cartoes { display: flex; flex-direction: column; gap: var(--sp-3); }
 .cartao-item {

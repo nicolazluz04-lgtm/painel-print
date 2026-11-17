@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { ORDEM_PAPEIS, rotuloPapel } from "@/lib/papeis";
 
 function tkn() { try { return localStorage.getItem("token") || ""; } catch { return ""; } }
 
@@ -140,10 +141,7 @@ export default function Configuracoes() {
                 <div className="text-[10px] truncate" style={{ color: "var(--text-muted)" }}>{u.email}</div>
               </div>
               <select value={u.role || "operador"} onChange={e => mudarPerfil(u, e.target.value)} disabled={u.role === "admin"} className="px-2 py-1 rounded text-[10px] font-bold" style={IS}>
-                <option value="operador">Operador</option>
-                <option value="consultor">Consultor</option>
-                <option value="gerente">Gerente</option>
-                <option value="admin">Admin</option>
+                {ORDEM_PAPEIS.map(p => <option key={p} value={p}>{rotuloPapel(p)}</option>)}
               </select>
               <button onClick={() => resetarSenha(u)} className="px-2 py-1 rounded text-[10px] font-bold cursor-pointer" style={{ color: "var(--text-muted)", border: "1px solid var(--border)" }}>Senha</button>
               <button onClick={() => excluirUser(u)} disabled={u.role === "admin"} className="px-2 py-1 rounded text-[10px] font-bold cursor-pointer" style={{ color: u.role === "admin" ? "var(--text-soft)" : "#C62828", border: "1px solid var(--border)" }}>Excluir</button>

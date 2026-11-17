@@ -2,7 +2,7 @@
 window.PRINT_CONFIG = {
   SUPABASE_URL: "https://yewiqyzeifamjtjmnvxb.supabase.co",
   SUPABASE_ANON_KEY: "sb_publishable_JshUcAdtjHPs7GBzoVuarA_QntVcbWo",
-  ADMIN_EMAIL: "",  // não é usado para permissão: o banco decide (tabela admins)
-  // Opcional: URL da Edge Function ai-insights para ativar o botão de IA
+  ADMIN_EMAIL: "",  // não é usado para permissão: o banco decide (tabela usuarios, funções my_role/kv_can_write)
+  // Opcional (desligada): URL da Edge Function ai-insights para ativar o botão de IA
   AI_ENDPOINT: ""
 };

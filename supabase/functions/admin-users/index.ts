@@ -1,21 +1,21 @@
-// Gestão de usuários do painel. Só administradores (tabela public.usuarios, role = 'admin').
+// Gestão de usuários do painel. Só administradores: quem decide é o banco (public.is_admin(),
+// chamada com o JWT de quem pediu; vale public.usuarios e a tabela legada admins).
 // Ações (POST JSON): {acao:"listar"} | {acao:"salvar", email, nome, role, senha?} | {acao:"senha", email, senha} | {acao:"remover", email}
 import { createClient } from "npm:@supabase/supabase-js@2";
-const cors = { "access-control-allow-origin": "*", "access-control-allow-headers": "authorization, content-type, apikey, x-client-info", "access-control-allow-methods": "POST, OPTIONS" };
-const json = (b: unknown, status = 200) => new Response(JSON.stringify(b), { status, headers: { ...cors, "content-type": "application/json" } });
+import { barrarOrigem, json as jsonCors, jwtDe, perguntarAoBanco } from "../_shared/http.ts";
 const ROLES = ["admin", "gerente", "operador"];
 const emailOk = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
+  const parar = barrarOrigem(req); if (parar) return parar;
+  const json = (b: unknown, status = 200) => jsonCors(req, b, status);
   if (req.method !== "POST") return json({ detail: "método" }, 405);
   const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
-  const jwt = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
+  const jwt = jwtDe(req);
   const { data: me } = await sb.auth.getUser(jwt);
   const myEmail = (me?.user?.email ?? "").toLowerCase();
   if (!myEmail) return json({ detail: "Faça login novamente." }, 401);
-  const { data: meRow } = await sb.from("usuarios").select("role, ativo").eq("email", myEmail).maybeSingle();
-  if (!meRow || meRow.role !== "admin" || !meRow.ativo) return json({ detail: "Somente administradores." }, 403);
+  if (!(await perguntarAoBanco(jwt, "is_admin"))) return json({ detail: "Somente administradores." }, 403);
 
   const b = await req.json().catch(() => ({}));
   const acao = String(b.acao ?? "");

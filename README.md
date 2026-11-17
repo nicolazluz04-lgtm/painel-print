@@ -22,7 +22,8 @@ supabase/
   migrations/                     estrutura do banco, permissões por papel, agendamento da frota
   functions/sascar-sync/          busca a frota na Sascar a cada 2 min (pg_cron)
   functions/admin-users/          gestão de usuários (só administradores)
-  functions/ai-insights/          IA opcional (desligada)
+  functions/ai-insights/          IA opcional (desligada; só membros ativos)
+  functions/_shared/              CORS restrito aos endereços do painel e consulta de papel no banco
 docs/
   ARQUITETURA.md                  como as peças se ligam
   AUDITORIA-2026-11-13.md         última auditoria

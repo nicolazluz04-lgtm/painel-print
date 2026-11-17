@@ -49,17 +49,17 @@ export default function ReportModal({ ordem, onClose }: { ordem: any | null; onC
   const lista = [...notas].sort((a: any, b: any) => String(b.created_at || b.hora || "").localeCompare(String(a.created_at || a.hora || "")));
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Report">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col" style={{ background: "var(--bg-card)", border: "1px solid var(--border-bright)", maxHeight: "92vh" }}>
-        <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
+      <div className="relative z-10 w-full min-w-0 max-w-4xl rounded-2xl shadow-2xl flex flex-col" style={{ background: "var(--bg-card)", border: "1px solid var(--border-bright)", maxHeight: "92vh" }}>
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
           <div>
             <div className="text-[9px] uppercase tracking-widest font-bold" style={{ color: "var(--text-muted)" }}>Report</div>
             <h2 className="text-base font-bold" style={{ color: "var(--text)" }}>O.S. {ordem.os || "—"} {ordem.placa ? <span className="font-mono" style={{ color: "var(--accent-green)" }}>· {ordem.placa}</span> : null}</h2>
           </div>
           <button onClick={onClose} className="px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer" style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}>Fechar</button>
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
           {carregando ? (<p className="text-center py-10 text-sm" style={{ color: "var(--text-muted)" }}>Carregando...</p>) : lista.length === 0 ? (<p className="text-center py-10 text-sm" style={{ color: "var(--text-muted)" }}>Nenhum registro ainda. Escreva o primeiro abaixo.</p>) : (
             lista.map((n: any, i: number) => (
               <div key={n.id || i} className="py-3" style={{ borderBottom: "1px dashed var(--border)" }}>
@@ -73,9 +73,9 @@ export default function ReportModal({ ordem, onClose }: { ordem: any | null; onC
             ))
           )}
         </div>
-        <form onSubmit={enviar} className="px-6 py-4 flex gap-2" style={{ borderTop: "1px solid var(--border)" }}>
-          <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escreva uma nova mensagem..." className="flex-1 px-3 py-2.5 rounded-lg text-sm" style={{ background: "var(--bg-alt)", border: "1px solid var(--border)", color: "var(--text)" }} />
-          <button disabled={enviando || !texto.trim()} className="px-6 py-2.5 rounded-lg text-xs font-bold cursor-pointer" style={{ background: enviando || !texto.trim() ? "var(--bg-alt)" : "var(--accent-green)", color: enviando || !texto.trim() ? "var(--text-muted)" : "#fff" }}>{enviando ? "Enviando..." : "Enviar"}</button>
+        <form onSubmit={enviar} className="px-4 sm:px-6 py-4 flex gap-2" style={{ borderTop: "1px solid var(--border)" }}>
+          <input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Escreva uma nova mensagem..." className="flex-1 min-w-0 px-3 py-2 rounded-lg text-sm" style={{ background: "var(--bg-alt)", border: "1px solid var(--border)", color: "var(--text)" }} />
+          <button disabled={enviando || !texto.trim()} className="px-6 py-2 rounded-lg text-xs font-bold cursor-pointer" style={{ background: enviando || !texto.trim() ? "var(--bg-alt)" : "var(--accent-green)", color: enviando || !texto.trim() ? "var(--text-muted)" : "#fff" }}>{enviando ? "Enviando..." : "Enviar"}</button>
         </form>
       </div>
     </div>

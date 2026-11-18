@@ -41,15 +41,15 @@
 
 ## 3. Usuários cadastrados (marcados por papel)
 
-| Pessoa | Papel | Situação |
+| Conta | Papel | Situação |
 |---|---|---|
-| Nicolas Luz (pessoal) | Admin | Ativo (é você) |
-| Nicolas Luz (corporativo) | Admin | Sem senha |
-| Marcos Camargo | Gerente | Sem senha |
-| Julia Santos | Gerente | Sem senha |
-| Isadorah Barbosa | Gerente | Sem senha |
+| Admin (conta pessoal) | Admin | Ativo |
+| Admin (conta corporativa) | Admin | Sem senha |
+| Gerente 1 | Gerente | Sem senha |
+| Gerente 2 | Gerente | Sem senha |
+| Gerente 3 | Gerente | Sem senha |
 
-Os papéis vieram do campo "perfil" das O.S. que cada pessoa criou no sistema antigo, e você os confirmou.
+Os papéis vieram do campo "perfil" das O.S. que cada conta criou no sistema antigo e foram confirmados pelo responsável. Nomes e e-mails ficam só no banco (tabela `usuarios`), nunca neste repositório.
 
 **O que cada papel pode fazer:**
 - **Admin:** tudo, incluindo Usuários, Configurações, Bases e Cancelamentos.

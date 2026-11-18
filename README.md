@@ -22,7 +22,8 @@ supabase/
   migrations/                     estrutura do banco, permissões por papel, agendamento da frota
   functions/sascar-sync/          busca a frota na Sascar a cada 2 min (pg_cron)
   functions/admin-users/          gestão de usuários (só administradores)
-  functions/ai-insights/          IA opcional (desligada)
+  functions/ai-insights/          IA opcional (desligada; só membros ativos)
+  functions/_shared/              CORS restrito aos endereços do painel e consulta de papel no banco
 docs/
   ARQUITETURA.md                  como as peças se ligam
   AUDITORIA-2026-11-13.md         última auditoria
@@ -44,6 +45,6 @@ docs/
 ## Segurança
 
 - Nenhuma senha, chave secreta ou dado pessoal neste repositório. A chave em `config.js` é a *publishable key*, pública por desenho; quem protege os dados são as regras do banco (RLS).
-- Só usuários logados leem dados. Gerentes editam a operação; só administradores mexem em Usuários e Configurações.
+- Só usuários cadastrados e ativos (tabela `usuarios`) leem dados. Gerentes editam a operação (O.S., prestadores, peças, acionamentos); só administradores mexem em Bases, Configurações e Usuários, excluem O.S. e aprovam cancelamentos.
 - Credenciais da Sascar e o segredo do agendador ficam no **Vault** do Supabase.
 - Cadastros públicos estão desligados: novos usuários são criados por um administrador na tela **Usuários**.

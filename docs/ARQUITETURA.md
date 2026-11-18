@@ -13,6 +13,7 @@ Navegador ──(abre)──► GitHub Pages: index.html + claude-shim.js + conf
                                      ├─ Vault: credenciais Sascar, segredo do agendador
                                      ├─ pg_cron (a cada 2 min) ──► Edge Function sascar-sync
                                      │                               └─► Sascar SasIntegra (SOAP)
+                                     ├─ pg_cron (a cada 5 min) ──► registrar_alertas_sla() (SQL: log SLA_ALERTA_60MIN)
                                      └─ Edge Function admin-users (só admin)
 ```
 
@@ -25,14 +26,16 @@ Navegador ──(abre)──► GitHub Pages: index.html + claude-shim.js + conf
 | Ligação com o Supabase | `claude-shim.js` | Login, papel do usuário, leitura e escrita, tempo real, sair e trocar senha |
 | Frota | `supabase/functions/sascar-sync` | Busca posições na Sascar e grava em `kv/sascar_pos/main` |
 | Usuários | `supabase/functions/admin-users` | Criar, editar, definir senha e remover (confere se quem pede é admin) |
-| Permissões | `supabase/migrations/004_usuarios_papeis.sql` | `my_role()`, `is_admin()`, `can_edit()` e políticas da `kv` |
+| Permissões | `supabase/migrations/004_usuarios_papeis.sql`, `005_permissoes_por_papel.sql` | `my_role()`, `is_member()`, `is_admin()`, `kv_can_write(coleção, ação)` e políticas da `kv` |
 
 ## Papéis
 
 | Papel | Abas | Pode alterar |
 |---|---|---|
-| Admin | todas | tudo, incluindo Usuários e Configurações |
-| Gerente | Dashboard, Atendimento, O.S., Prestadores, Peças, Log | dados da operação (não altera Configurações nem Usuários) |
+| Admin | todas | tudo: Bases, Configurações, Usuários, excluir O.S. e aprovar cancelamentos |
+| Gerente | Dashboard, Atendimento, O.S., Prestadores, Peças, Log | cria e edita O.S. (notas, fechamento, pedido de cancelamento), prestadores, peças, acionamentos e ocorrências; acrescenta linhas ao Log |
 | Operador | Dashboard, Atendimento, O.S. | nada (consulta) |
 
-As permissões são verificadas **no banco**. A interface só esconde o que o papel não usa.
+Quem não está em `public.usuarios` com `ativo = true` (ou na tabela legada `admins`) não lê nada, mesmo com conta no Auth.
+
+As permissões são verificadas **no banco** (`kv_can_write` em `005_permissoes_por_papel.sql`). O `backend.js` repete a mesma tabela só para avisar antes de tentar gravar; a interface só esconde o que o papel não usa.

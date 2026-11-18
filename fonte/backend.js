@@ -11,6 +11,7 @@ export function setRole(r) { ROLE = r; }
 export function setUser(u) { usuarioAtual = u || usuarioAtual; ROLE = usuarioAtual.role || "operador"; }
 const QUEM = () => usuarioAtual.email || usuarioAtual.nome || "Usuário";
 export const getState = () => estado;
+export const papelAtual = () => ROLE;
 export const callRoute = (path) => route("GET", path, {}, null).b;
 
 // ── tempo (Brasília) ──

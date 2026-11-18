@@ -20,7 +20,8 @@ const Field = ({ label, children }: any) => (
 
 const IS: any = { background: "var(--bg-alt)", border: "1px solid var(--border)", color: "var(--text)" };
 
-export default function Configuracoes() {
+// admin = papel admin. Bases e "Excluir" só aparecem para o admin (o banco também recusa para os outros).
+export default function Configuracoes({ admin = false }: { admin?: boolean }) {
   const [cfg, setCfg] = useState<any>({});
   const [bases, setBases] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
@@ -29,6 +30,7 @@ export default function Configuracoes() {
 
   async function carregar() {
     const c = await api("/configuracoes"); setCfg(c?.data || {});
+    if (!admin) return;
     const b = await api("/bases"); setBases(b?.data || []);
     const u = await api("/users"); setUsers(u?.data || []);
   }
@@ -79,7 +81,7 @@ export default function Configuracoes() {
           <h2 className="text-base font-bold" style={{ color: "var(--text)" }}>Configurações</h2>
           <div className="text-xs" style={{ color: "var(--text-muted)" }}>Visível apenas para administradores</div>
         </div>
-        <button onClick={salvar} className="px-6 py-2 rounded-lg text-xs font-bold cursor-pointer" style={{ background: "var(--accent-green)", color: "#fff" }}>Salvar configurações</button>
+        {admin && <button onClick={salvar} className="px-6 py-2 rounded-lg text-xs font-bold cursor-pointer" style={{ background: "var(--accent-green)", color: "#fff" }}>Salvar configurações</button>}
       </div>
       {msg && <div className="mb-3 px-3 py-2 rounded-lg text-[11px] font-bold" style={{ background: "rgba(37,214,71,.12)", color: "#146E1F" }}>{msg}</div>}
 
@@ -101,7 +103,7 @@ export default function Configuracoes() {
         <div className="mt-3"><Field label="E-mails (separados por vírgula)"><input value={cfg.resumo_emails ?? ""} onChange={e => set("resumo_emails", e.target.value)} className="w-full px-3 py-2 rounded-lg text-sm" style={IS} /></Field></div>
       </S>
 
-      <S title="Bases">
+      {admin && <S title="Bases">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-3">
           <input placeholder="Nome" value={novaBase.nome} onChange={e => setNovaBase({ ...novaBase, nome: e.target.value })} className="px-3 py-2 rounded-lg text-xs" style={IS} />
           <input placeholder="Endereço" value={novaBase.endereco} onChange={e => setNovaBase({ ...novaBase, endereco: e.target.value })} className="px-3 py-2 rounded-lg text-xs" style={IS} />
@@ -121,9 +123,9 @@ export default function Configuracoes() {
             </div>
           ))}
         </div>
-      </S>
+      </S>}
 
-      <S title="Usuários">
+      {admin && <S title="Usuários">
         <div className="max-h-80 overflow-y-auto">
           {users.map((u: any) => (
             <div key={u.id} className="flex flex-wrap items-center gap-2 py-2" style={{ borderBottom: "1px dashed var(--border)" }}>
@@ -139,7 +141,7 @@ export default function Configuracoes() {
             </div>
           ))}
         </div>
-      </S>
+      </S>}
     </div>
   );
 }

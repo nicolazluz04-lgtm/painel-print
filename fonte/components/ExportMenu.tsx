@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { exportarOrdensExcel, exportarPrestadoresExcel, exportarGerencialPdf } from "../exportar.js";
 import { calcInsights, pedirIA } from "../insights.js";
+import { papelAtual } from "../backend.js";
 
 const card: any = { background: "var(--bg-card, #111)", border: "1px solid var(--border-bright, #444)", borderRadius: 12, boxShadow: "0 8px 30px rgba(0,0,0,.4)", color: "var(--text, #eee)" };
 const corPri: any = { alta: "#dc2626", media: "#d97706", baixa: "#16a34a" };
@@ -54,7 +55,8 @@ export default function ExportMenu() {
   const itens = [
     { t: "Ordens de serviço (Excel)", d: "Todas as O.S. com defeito, execução e valores", f: () => xl(exportarOrdensExcel, "Excel de O.S.") },
     { t: "Prestadores (Excel)", d: "Cadastro completo com tipo e faturamento", f: () => xl(exportarPrestadoresExcel, "Excel de prestadores") },
-    { t: "Relatório gerencial (PDF)", d: "Gráficos, últimos carros, placas recorrentes e análise da IA", f: pdf },
+    // Relatório gerencial: só gerente e admin (o operador só consulta).
+    ...(papelAtual() !== "operador" ? [{ t: "Relatório gerencial (PDF)", d: "Gráficos, últimos carros, placas recorrentes e análise da IA", f: pdf }] : []),
   ];
   const acoes: any = (window as any).__painelAcoes || {};
   const naoLidas = Number(acoes.naoLidas || 0);

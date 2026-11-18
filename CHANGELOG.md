@@ -2,6 +2,14 @@
 
 Formato: [versionamento semântico](https://semver.org/lang/pt-BR/) — MAIOR.MENOR.CORREÇÃO.
 
+## [1.6.1] — 18/11/2026
+### Corrigido (revisão final de 18/11)
+- Função de usuários aceita só os dois endereços do painel (saiu o endereço de teste local).
+- Regra "quem pode editar" num lugar só (`fonte/lib/permissoes.js`), usada pelas telas e pelo backend; papel desconhecido vira operador.
+- Planilha modelo: linhas de exemplo marcadas "EXEMPLO" e nunca importadas.
+- Operador: notificação marcada como lida continua lida depois de recarregar (guardado no navegador dele).
+- Selo "Cancelamento pendente" dentro da escala de espaçamento.
+
 ## [1.6.0] — 18/11/2026
 ### Adicionado
 - Importar planilha de prestadores e de O.S. (.xlsx/.csv), com prévia, motivo de cada linha ignorada e sem apagar nada (T6).

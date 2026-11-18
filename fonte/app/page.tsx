@@ -17,7 +17,7 @@ import ReportModal from "@/components/ReportModal";
 import DefeitoPicker from "@/components/DefeitoPicker";
 import Configuracoes from "@/components/Configuracoes";
 import Cancelamentos from "@/components/Cancelamentos";
-import { OPCOES_PAPEL, papelValido, papelVeAba, rotuloPapel } from "@/lib/papeis";
+import { OPCOES_PAPEL, ehAdmin, papelValido, papelVeAba, podeEditar, rotuloPapel } from "@/lib/papeis";
 import { api, EVENTO_ERRO } from "@/lib/api";
 import ImportarPlanilha from "@/components/ImportarPlanilha";
 import { exportarRelatorioAnalitico } from "../exportar.js";
@@ -82,7 +82,7 @@ const MARCAS = ["Volkswagen","Mercedes","Volvo","Iveco","Scania"];
 const TITULO_CANC = (o:any) => "Solicitado por "+(o.cancelamento_solicitado_por||"—")+(o.cancelamento_motivo?" · Motivo: "+o.cancelamento_motivo:"");
 const cancPendente = (o:any) => !!o.cancelamento_solicitado && !o.cancelado;
 const ESTILO_CANC = {background:"rgba(198,40,40,.12)",color:"#C62828",border:"1px solid rgba(198,40,40,.4)"};
-const seloCancPendente = (o:any) => (cancPendente(o) ? <span className="ml-2 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold align-middle whitespace-nowrap" style={ESTILO_CANC} title={TITULO_CANC(o)}>Cancelamento pendente</span> : null);
+const seloCancPendente = (o:any) => (cancPendente(o) ? <span className="ml-2 inline-block px-2 py-1 rounded-full text-[10px] font-bold align-middle whitespace-nowrap" style={ESTILO_CANC} title={TITULO_CANC(o)}>Cancelamento pendente</span> : null);
 
 // ── Sidebar ─────────────────────────────────────────────────────────────────
 type NavTab = "dashboard"|"atendimento"|"acompanhamento"|"prestadores"|"bases"|"pecas"|"ocorrencias"|"acionamentos"|"ordens"|"usuarios"|"log"|"config"|"cancelamentos";
@@ -167,8 +167,8 @@ export default function Dashboard() {
   }, []);
 
   const role = papelValido(user?.role);
-  const canWrite = role === "gerente" || role === "admin";
-  const canManage = role === "admin";
+  const canWrite = podeEditar(role);
+  const canManage = ehAdmin(role);
 
   const loadData = useCallback(async () => { setLoading(true); try { const [p, a, s, o, oc, bs, orc, esc] = await Promise.all([fetcher("/prestadores"), fetcher("/acionamentos"), fetcher("/stats"), fetcher("/ordens"), fetcher("/ocorrencias"), fetcher("/bases"), fetcher("/stats/orcado"), fetcher("/escalonamento")]);
     fetcher("/frota/placas").then((fr:any)=>{ if(fr?.data) setFrotaPlacas(fr.data); }); setPrestadores(p?.data||[]); setAcionamentos(a?.data||[]); setStats(s||null); setOrdens(o?.data||[]); setOcorrencias(oc?.data||[]); setBases(bs?.data||[]); setOrcado(orc||null); setEscalamento(esc||null); } catch(e) { console.error(e); } finally { setLoading(false); } }, []);

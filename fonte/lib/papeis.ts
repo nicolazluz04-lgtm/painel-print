@@ -1,6 +1,8 @@
 // Mapa único de papéis do painel (rótulo, descrição e abas visíveis).
 // Usado pelo menu lateral, pelas listas de "Nível de acesso" (page.tsx) e pelas Configurações.
-// As permissões de gravação de verdade ficam no banco (Supabase); aqui é só o que a tela mostra.
+// O que cada papel pode gravar fica em lib/permissoes.js (espelho do banco); este arquivo re-exporta podeEditar/ehAdmin.
+import { papelValido as papelValidoJs, podeEditar, ehAdmin } from "./permissoes.js";
+export { podeEditar, ehAdmin };
 
 export type Papel = "admin" | "gerente" | "operador";
 
@@ -15,7 +17,7 @@ export const ORDEM_PAPEIS: Papel[] = ["operador", "gerente", "admin"];
 
 /** Papel conhecido ou "operador" (o menor acesso) para qualquer valor estranho. */
 export function papelValido(r: unknown): Papel {
-  return typeof r === "string" && r in PAPEIS ? (r as Papel) : "operador";
+  return papelValidoJs(r) as Papel;
 }
 
 export function rotuloPapel(r: unknown): string {

@@ -6,7 +6,6 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 export const ORIGENS_PERMITIDAS = new Set([
   "https://painel-print.vercel.app",
   "https://nicolazluz04-lgtm.github.io",
-  "http://localhost:8088", // teste local
 ]);
 
 export function corsHeaders(req: Request): Record<string, string> {

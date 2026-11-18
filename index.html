@@ -1508,6 +1508,7 @@ label:has(> input[type=checkbox]), label:has(> input[type=radio]) { min-height: 
       const nome = texto(r.nome);
       const ignorar = (motivo) => ignorados.push({ linha, nome, motivo });
       if (!nome) return ignorar("Nome vazio");
+      if (/^exemplo\b/i.test(nome)) return ignorar("Linha de exemplo do modelo (apague-a ou troque pelos dados reais)");
       let doc = digitos(typeof r.cnpj === "number" ? Math.round(r.cnpj) : r.cnpj);
       if (doc && typeof r.cnpj === "number" && doc.length === 13) doc = "0" + doc;
       let cnpj = "";
@@ -1675,6 +1676,38 @@ label:has(> input[type=checkbox]), label:has(> input[type=radio]) { min-height: 
     return new Blob([X2.write(wb, { type: "array", bookType: "xlsx" })], { type: MIME_XLSX });
   }
 
+  // lib/permissoes.js
+  var PAPEIS_VALIDOS = ["admin", "gerente", "operador"];
+  function papelValido(r) {
+    return PAPEIS_VALIDOS.includes(r) ? r : "operador";
+  }
+  function podeEditar(r) {
+    const p = papelValido(r);
+    return p === "admin" || p === "gerente";
+  }
+  function ehAdmin(r) {
+    return papelValido(r) === "admin";
+  }
+  var TODAS = ["insert", "update", "delete"];
+  var ESCRITA_GERENTE = {
+    ordens: ["insert", "update"],
+    // excluir O.S.: só admin
+    prestadores: TODAS,
+    pecas_envio: TODAS,
+    acionamentos: TODAS,
+    ocorrencias: ["insert", "update"],
+    notificacoes: ["insert", "update"],
+    // marcar como lida
+    log: ["insert"]
+    // o log só cresce
+  };
+  function papelPodeGravar(r, colecao, acao) {
+    const p = papelValido(r);
+    if (p === "admin") return true;
+    if (p === "gerente") return (ESCRITA_GERENTE[colecao] || []).includes(acao);
+    return false;
+  }
+
   // backend.js
   var COLS = ["prestadores", "ordens", "bases", "acionamentos", "pecas_envio", "log", "ocorrencias", "notificacoes"];
   var estado = { prestadores: [], ordens: [], bases: [], acionamentos: [], pecas_envio: [], log: [], ocorrencias: [], notificacoes: [], frota: [], config: {} };
@@ -1684,8 +1717,26 @@ label:has(> input[type=checkbox]), label:has(> input[type=radio]) { min-height: 
   var usuarioAtual = { email: "", nome: "", role: "operador" };
   function setUser(u) {
     usuarioAtual = u || usuarioAtual;
-    ROLE = usuarioAtual.role || "operador";
+    ROLE = papelValido(usuarioAtual.role);
+    carregarLidasLocais();
   }
+  var lidasLocais = /* @__PURE__ */ new Set();
+  var chaveLidas = () => "painel:lidas:" + (usuarioAtual.email || "anon");
+  function carregarLidasLocais() {
+    try {
+      lidasLocais = new Set(JSON.parse(globalThis.localStorage?.getItem(chaveLidas()) || "[]"));
+    } catch {
+      lidasLocais = /* @__PURE__ */ new Set();
+    }
+  }
+  function marcarLidaLocal(id) {
+    lidasLocais.add(id);
+    try {
+      globalThis.localStorage?.setItem(chaveLidas(), JSON.stringify([...lidasLocais].slice(-500)));
+    } catch {
+    }
+  }
+  var comLidasLocais = (lista) => lidasLocais.size ? lista.map((n) => lidasLocais.has(n.id) ? { ...n, lida: true } : n) : lista;
   var QUEM = () => usuarioAtual.email || usuarioAtual.nome || "Usu\xE1rio";
   var getState = () => estado;
   var papelAtual = () => ROLE;
@@ -1729,12 +1780,8 @@ label:has(> input[type=checkbox]), label:has(> input[type=radio]) { min-height: 
   var aberta = (o) => !!o.abertura && !o.fechamento && !o.cancelado;
   var capitalizar = (v) => String(v || "").trim().toLowerCase().replace(/(^|[^a-zà-ÿ])([a-zà-ÿ])/g, (m, a, b) => a + b.toUpperCase());
   var normPlaca = (v) => String(v || "").trim().toUpperCase();
-  var TODAS = ["insert", "update", "delete"];
-  var ESCRITA_GERENTE = { ordens: ["insert", "update"], prestadores: TODAS, pecas_envio: TODAS, acionamentos: TODAS, ocorrencias: ["insert", "update"], notificacoes: ["insert", "update"], log: ["insert"] };
   function podeGravar(colecao, acao) {
-    if (ROLE === "admin") return true;
-    if (ROLE === "gerente") return (ESCRITA_GERENTE[colecao] || []).includes(acao);
-    return false;
+    return papelPodeGravar(ROLE, colecao, acao);
   }
   var SemPermissao = class extends Error {
     constructor(msg) {
@@ -1830,7 +1877,8 @@ label:has(> input[type=checkbox]), label:has(> input[type=radio]) { min-height: 
     };
     const docMain = (snap) => snap.docs.find((x) => x.id === "main");
     COLS.forEach((c) => ouvir(c, (snap) => {
-      estado[c] = snap.docs.map((d) => ({ id: d.id, ...d.data(), _k: d.id }));
+      const docs = snap.docs.map((d) => ({ id: d.id, ...d.data(), _k: d.id }));
+      estado[c] = c === "notificacoes" ? comLidasLocais(docs) : docs;
     }, umaPronta));
     ouvir("frota_placas", (snap) => {
       estado.frota = snap.docs.flatMap((d) => d.data().items || []);
@@ -2100,7 +2148,7 @@ label:has(> input[type=checkbox]), label:has(> input[type=radio]) { min-height: 
         if (!c && method === "PUT") {
           const upd = body || {}, o = { ...it, ...upd };
           const cancelada = (x) => !!x.cancelado || x.status === "Cancelada";
-          if (ROLE !== "admin" && cancelada(o) !== cancelada(it)) return fail(403, 'S\xF3 um administrador cancela O.S. Use "Excluir" para solicitar o cancelamento.');
+          if (!ehAdmin(ROLE) && cancelada(o) !== cancelada(it)) return fail(403, 'S\xF3 um administrador cancela O.S. Use "Excluir" para solicitar o cancelamento.');
           ["motorista", "operador", "modelo", "marca", "rodovia", "localizacao"].forEach((k) => {
             if (k in upd && upd[k]) o[k] = capitalizar(upd[k]);
           });
@@ -2150,7 +2198,7 @@ label:has(> input[type=checkbox]), label:has(> input[type=radio]) { min-height: 
           return ok({ success: true, data: o });
         }
         if (c === "cancelar" && d === "aprovar") {
-          if (ROLE !== "admin") return fail(403, "S\xF3 um administrador aprova cancelamentos.");
+          if (!ehAdmin(ROLE)) return fail(403, "S\xF3 um administrador aprova cancelamentos.");
           if (it.cancelado) return fail(400, "Esta O.S. j\xE1 est\xE1 cancelada.");
           if (!it.cancelamento_solicitado) return fail(400, "Nenhum cancelamento pendente para esta O.S.");
           const ag = now();
@@ -2163,7 +2211,7 @@ label:has(> input[type=checkbox]), label:has(> input[type=radio]) { min-height: 
           if (it.cancelado) return fail(400, "Esta O.S. j\xE1 est\xE1 cancelada.");
           const ag = now();
           const o = { ...it, cancelamento_solicitado: true, cancelamento_motivo: body.motivo, cancelamento_solicitado_por: QUEM(), cancelamento_solicitado_em: ag, historico: [...it.historico || [], { hora: ag, etapa: "CANCELAMENTO_SOLICITADO", quem: QUEM() }] };
-          if (ROLE !== "admin") {
+          if (!ehAdmin(ROLE)) {
             put("ordens", o);
             addLog("OS_CANCELAMENTO_SOLICITADO", o.os, `Motivo: ${body.motivo}`, QUEM());
             return ok({ success: true, pendente: true, data: o });
@@ -2225,12 +2273,18 @@ label:has(> input[type=checkbox]), label:has(> input[type=radio]) { min-height: 
       }
     }
     if (a === "notificacoes") {
-      if (!b) return ok({ data: estado.notificacoes, nao_lidas: estado.notificacoes.filter((n) => !n.lida).length });
+      if (!b) {
+        const lista = comLidasLocais(estado.notificacoes);
+        return ok({ data: lista, nao_lidas: lista.filter((n) => !n.lida).length });
+      }
       if (c === "ler") {
         const x = estado.notificacoes.find((i) => i.id === b);
         if (x) {
           if (podeGravar("notificacoes", "update")) put("notificacoes", { ...x, lida: true });
-          else estado.notificacoes = estado.notificacoes.map((n) => n.id === b ? { ...n, lida: true } : n);
+          else {
+            marcarLidaLocal(b);
+            estado.notificacoes = comLidasLocais(estado.notificacoes);
+          }
         }
         return ok({ success: true });
       }
@@ -2276,7 +2330,7 @@ label:has(> input[type=checkbox]), label:has(> input[type=radio]) { min-height: 
       return ok({ data: [], credencial_ok: true });
     }
     if (a === "relatorio" && b === "gerencial2") {
-      if (ROLE !== "admin" && ROLE !== "gerente") return fail(403, "O relat\xF3rio gerencial \xE9 s\xF3 para gerentes e administradores.");
+      if (!podeEditar(ROLE)) return fail(403, "O relat\xF3rio gerencial \xE9 s\xF3 para gerentes e administradores.");
       const dias = parseInt(q.get("dias") || "30", 10) || 0;
       const agora = /* @__PURE__ */ new Date();
       const esc = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
@@ -2364,7 +2418,7 @@ label:has(> input[type=checkbox]), label:has(> input[type=radio]) { min-height: 
     const J = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { "Content-Type": "application/json" } });
     const seg = path.replace(/^\/+/, "").split("/");
     if (seg[0] === "users" || seg[0] === "usuarios") {
-      if (ROLE !== "admin") return J({ detail: "Somente administradores." }, 403);
+      if (!ehAdmin(ROLE)) return J({ detail: "Somente administradores." }, 403);
       const call = window.__printUsers;
       if (!call) return J({ detail: "Indispon\xEDvel" }, 503);
       const id = seg[1] ? decodeURIComponent(seg[1]) : "";
@@ -2378,9 +2432,8 @@ label:has(> input[type=checkbox]), label:has(> input[type=radio]) { min-height: 
         return J({ detail: String(e && e.message || e) }, 400);
       }
     }
-    const podeEditar = ROLE === "admin" || ROLE === "gerente";
     const soMarcaLida = seg[0] === "notificacoes" && seg[2] === "ler";
-    if (mth !== "GET" && !soMarcaLida && (!podeEditar || seg[0] === "configuracoes" && ROLE !== "admin"))
+    if (mth !== "GET" && !soMarcaLida && (!podeEditar(ROLE) || seg[0] === "configuracoes" && !ehAdmin(ROLE)))
       return J({ detail: "Sem permiss\xE3o para alterar. Fale com um administrador." }, 403);
     let res;
     try {
@@ -2672,15 +2725,15 @@ print("MB="+s64[${i}*${SIZE}:(${i}+1)*${SIZE}]+"=END", len(s64))
     admin: { rotulo: "Admin", descricao: "total", abas: "todas" }
   };
   var ORDEM_PAPEIS = ["operador", "gerente", "admin"];
-  function papelValido(r) {
-    return typeof r === "string" && r in PAPEIS ? r : "operador";
+  function papelValido2(r) {
+    return papelValido(r);
   }
   function rotuloPapel(r) {
-    return PAPEIS[papelValido(r)].rotulo;
+    return PAPEIS[papelValido2(r)].rotulo;
   }
   var OPCOES_PAPEL = ORDEM_PAPEIS.map((id) => ({ v: id, l: `${PAPEIS[id].rotulo} (${PAPEIS[id].descricao})` }));
   function papelVeAba(r, aba) {
-    const abas = PAPEIS[papelValido(r)].abas;
+    const abas = PAPEIS[papelValido2(r)].abas;
     return abas === "todas" || abas.includes(aba);
   }
 
@@ -3234,7 +3287,7 @@ print("MB="+s64[${i}*${SIZE}:(${i}+1)*${SIZE}]+"=END", len(s64))
   var TITULO_CANC = (o) => "Solicitado por " + (o.cancelamento_solicitado_por || "\u2014") + (o.cancelamento_motivo ? " \xB7 Motivo: " + o.cancelamento_motivo : "");
   var cancPendente = (o) => !!o.cancelamento_solicitado && !o.cancelado;
   var ESTILO_CANC = { background: "rgba(198,40,40,.12)", color: "#C62828", border: "1px solid rgba(198,40,40,.4)" };
-  var seloCancPendente = (o) => cancPendente(o) ? /* @__PURE__ */ React.createElement("span", { className: "ml-2 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold align-middle whitespace-nowrap", style: ESTILO_CANC, title: TITULO_CANC(o) }, "Cancelamento pendente") : null;
+  var seloCancPendente = (o) => cancPendente(o) ? /* @__PURE__ */ React.createElement("span", { className: "ml-2 inline-block px-2 py-1 rounded-full text-[10px] font-bold align-middle whitespace-nowrap", style: ESTILO_CANC, title: TITULO_CANC(o) }, "Cancelamento pendente") : null;
   var NAV_ITEMS = [
     { id: "dashboard", label: "Dashboard", icon: /* @__PURE__ */ React.createElement(import_lucide_react.LayoutDashboard, { size: 16 }) },
     { id: "atendimento", label: "Atendimento", icon: /* @__PURE__ */ React.createElement(import_lucide_react.Timer, { size: 16 }), alert: true },
@@ -3385,9 +3438,9 @@ print("MB="+s64[${i}*${SIZE}:(${i}+1)*${SIZE}]+"=END", len(s64))
       if (u && typeof u === "object") setUser2(u);
       else setUser2({ email: "", nome: "", role: "operador" });
     }, []);
-    const role = papelValido(user?.role);
-    const canWrite = role === "gerente" || role === "admin";
-    const canManage = role === "admin";
+    const role = papelValido2(user?.role);
+    const canWrite = podeEditar(role);
+    const canManage = ehAdmin(role);
     const loadData = (0, import_react10.useCallback)(async () => {
       setLoading(true);
       try {
@@ -4140,7 +4193,7 @@ print("MB="+s64[${i}*${SIZE}:(${i}+1)*${SIZE}]+"=END", len(s64))
       { t: "Ordens de servi\xE7o (Excel)", d: "Todas as O.S. com defeito, execu\xE7\xE3o e valores", f: () => xl(exportarOrdensExcel, "Excel de O.S.") },
       { t: "Prestadores (Excel)", d: "Cadastro completo com tipo e faturamento", f: () => xl(exportarPrestadoresExcel, "Excel de prestadores") },
       // Relatório gerencial: só gerente e admin (o operador só consulta).
-      ...papelAtual() !== "operador" ? [{ t: "Relat\xF3rio gerencial (PDF)", d: "Gr\xE1ficos, \xFAltimos carros, placas recorrentes e an\xE1lise da IA", f: pdf }] : []
+      ...podeEditar(papelAtual()) ? [{ t: "Relat\xF3rio gerencial (PDF)", d: "Gr\xE1ficos, \xFAltimos carros, placas recorrentes e an\xE1lise da IA", f: pdf }] : []
     ];
     const acoes = window.__painelAcoes || {};
     const naoLidas = Number(acoes.naoLidas || 0);
@@ -4188,7 +4241,7 @@ print("MB="+s64[${i}*${SIZE}:(${i}+1)*${SIZE}]+"=END", len(s64))
   (async () => {
     const cl = window.claude;
     const me = window.__printReady ? await window.__printReady : null;
-    const role = papelValido(me && me.role);
+    const role = papelValido2(me && me.role);
     const user = { id: me && me.email || "anon", email: me && me.email || "", nome: me && me.nome || me && me.email || "", role };
     setUser(user);
     let db = null;

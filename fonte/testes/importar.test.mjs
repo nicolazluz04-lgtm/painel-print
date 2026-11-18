@@ -221,3 +221,35 @@ test("frota: km e última posição da Sascar entram na consulta, sem gravar em 
   await esperar();
   assert.equal(db.gravados.length, 0);
 });
+
+test("modelo: linhas EXEMPLO nunca são importadas", () => {
+  const r = imp.prepararPrestadores([{ Nome: "EXEMPLO - Guincho Teste", CNPJ: "", Cidade: "Jundiaí", "Estado (UF)": "SP", "Tipo de Serviço": "guincho" }]);
+  assert.equal(r.novos.length, 0);
+  assert.match(r.ignorados[0].motivo, /exemplo/i);
+});
+
+test("permissões: papel estranho vira operador; podeEditar só admin/gerente", async () => {
+  const p = await import("../lib/permissoes.js");
+  assert.equal(p.papelValido("consultor"), "operador");
+  assert.equal(p.podeEditar("gerente"), true);
+  assert.equal(p.podeEditar("operador"), false);
+  assert.equal(p.papelPodeGravar("gerente", "config", "update"), false);
+  assert.equal(p.papelPodeGravar("gerente", "ordens", "delete"), false);
+  assert.equal(p.papelPodeGravar("admin", "config", "update"), true);
+});
+
+test("operador: notificação lida continua lida depois de recarregar", async () => {
+  const mem = new Map();
+  globalThis.localStorage = { getItem: k => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) };
+  be.setUser({ email: "op@exemplo", role: "operador" });
+  be.getState().notificacoes = [{ id: "n1", lida: false }];
+  const r = await chamar("PUT", "/notificacoes/n1/ler", {});
+  assert.equal(r.status, 200);
+  assert.ok(String(mem.get("painel:lidas:op@exemplo")).includes("n1"));
+  // simula novo login: as lidas voltam do navegador
+  be.setUser({ email: "op@exemplo", role: "operador" });
+  be.getState().notificacoes = [{ id: "n1", lida: false }];
+  const lista = await chamar("GET", "/notificacoes");
+  delete globalThis.localStorage;
+  assert.equal(lista.json.nao_lidas, 0);
+});

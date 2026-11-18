@@ -1,14 +1,25 @@
 // Backend do painel rodando dentro da página. Intercepta fetch("/api/...") e responde
 // com a mesma lógica das rotas do serviço original, guardando os dados no banco da página.
 import { prepararPrestadores, prepararOrdens, LIMITE_LINHAS } from "./importar.js";
+import { papelValido, podeEditar, ehAdmin, papelPodeGravar } from "./lib/permissoes.js";
 const COLS = ["prestadores", "ordens", "bases", "acionamentos", "pecas_envio", "log", "ocorrencias", "notificacoes"];
 const estado = { prestadores: [], ordens: [], bases: [], acionamentos: [], pecas_envio: [], log: [], ocorrencias: [], notificacoes: [], frota: [], config: {} };
 const DEF_CONFIG = { escalonamento_gerencia_h: 4, escalonamento_supervisor_h: 2, mostrar_bases: true, mostrar_oficinas: true, raio_km: 100, resumo_ativo: false, resumo_emails: "", resumo_horario: "07:30", sascar_intervalo_min: 5 };
 let DB = null;
 let ROLE = "operador";
 let usuarioAtual = { email: "", nome: "", role: "operador" };
-export function setRole(r) { ROLE = r; }
-export function setUser(u) { usuarioAtual = u || usuarioAtual; ROLE = usuarioAtual.role || "operador"; }
+export function setUser(u) { usuarioAtual = u || usuarioAtual; ROLE = papelValido(usuarioAtual.role); carregarLidasLocais(); }
+// Notificações lidas por quem não grava no banco (operador): guardadas só neste navegador.
+let lidasLocais = new Set();
+const chaveLidas = () => "painel:lidas:" + (usuarioAtual.email || "anon");
+function carregarLidasLocais() {
+  try { lidasLocais = new Set(JSON.parse(globalThis.localStorage?.getItem(chaveLidas()) || "[]")); } catch { lidasLocais = new Set(); }
+}
+function marcarLidaLocal(id) {
+  lidasLocais.add(id);
+  try { globalThis.localStorage?.setItem(chaveLidas(), JSON.stringify([...lidasLocais].slice(-500))); } catch { /* sem armazenamento: vale só nesta tela */ }
+}
+const comLidasLocais = lista => (lidasLocais.size ? lista.map(n => (lidasLocais.has(n.id) ? { ...n, lida: true } : n)) : lista);
 const QUEM = () => usuarioAtual.email || usuarioAtual.nome || "Usuário";
 export const getState = () => estado;
 export const papelAtual = () => ROLE;
@@ -53,15 +64,8 @@ const aberta = o => !!o.abertura && !o.fechamento && !o.cancelado;
 const capitalizar = v => String(v || "").trim().toLowerCase().replace(/(^|[^a-zà-ÿ])([a-zà-ÿ])/g, (m, a, b) => a + b.toUpperCase());
 const normPlaca = v => String(v || "").trim().toUpperCase();
 
-// ── permissões (espelho de public.kv_can_write em supabase/migrations/005_permissoes_por_papel.sql) ──
-// O banco é quem decide; aqui só evitamos mudar a tela quando o banco vai recusar a gravação.
-const TODAS = ["insert", "update", "delete"];
-const ESCRITA_GERENTE = { ordens: ["insert", "update"], prestadores: TODAS, pecas_envio: TODAS, acionamentos: TODAS, ocorrencias: ["insert", "update"], notificacoes: ["insert", "update"], log: ["insert"] };
-export function podeGravar(colecao, acao) {
-  if (ROLE === "admin") return true;
-  if (ROLE === "gerente") return (ESCRITA_GERENTE[colecao] || []).includes(acao);
-  return false;
-}
+// ── permissões (regras em lib/permissoes.js, espelho de public.kv_can_write na migração 005) ──
+export function podeGravar(colecao, acao) { return papelPodeGravar(ROLE, colecao, acao); }
 class SemPermissao extends Error { constructor(msg) { super(msg || "Sem permissão para alterar. Fale com um administrador."); this.status = 403; } }
 function exigirGravacao(colecao, acao) { if (!podeGravar(colecao, acao)) throw new SemPermissao(); }
 
@@ -118,7 +122,7 @@ export function startBackend(db) {
     db.collection(colecao).onSnapshot(snap => { aoMudar(snap); marcar(); }, marcar);
   };
   const docMain = snap => snap.docs.find(x => x.id === "main");
-  COLS.forEach(c => ouvir(c, snap => { estado[c] = snap.docs.map(d => ({ id: d.id, ...d.data(), _k: d.id })); }, umaPronta));
+  COLS.forEach(c => ouvir(c, snap => { const docs = snap.docs.map(d => ({ id: d.id, ...d.data(), _k: d.id })); estado[c] = c === "notificacoes" ? comLidasLocais(docs) : docs; }, umaPronta));
   ouvir("frota_placas", snap => { estado.frota = snap.docs.flatMap(d => d.data().items || []); }, umaPronta);
   ouvir("config", snap => { const d = docMain(snap); estado.config = d ? d.data() : {}; }, umaPronta);
   ouvir("sascar_pos", snap => { const d = docMain(snap); estado.sascar = d ? d.data() : { data: {} }; });
@@ -301,7 +305,7 @@ function route(method, path, q, body) {
       if (!c && method === "PUT") {
         const upd = body || {}, o = { ...it, ...upd };
         const cancelada = x => !!x.cancelado || x.status === "Cancelada";
-        if (ROLE !== "admin" && cancelada(o) !== cancelada(it)) return fail(403, "Só um administrador cancela O.S. Use \"Excluir\" para solicitar o cancelamento.");
+        if (!ehAdmin(ROLE) && cancelada(o) !== cancelada(it)) return fail(403, "Só um administrador cancela O.S. Use \"Excluir\" para solicitar o cancelamento.");
         ["motorista", "operador", "modelo", "marca", "rodovia", "localizacao"].forEach(k => { if (k in upd && upd[k]) o[k] = capitalizar(upd[k]); });
         if (upd.placa) o.placa = normPlaca(upd.placa);
         if ("os" in upd) o.os = String(o.os || "").trim().replace(/^0+/, "") || "0";
@@ -328,7 +332,7 @@ function route(method, path, q, body) {
       }
       // Cancelamento em duas etapas: o gerente solicita; o admin aprova (ou cancela direto).
       if (c === "cancelar" && d === "aprovar") {
-        if (ROLE !== "admin") return fail(403, "Só um administrador aprova cancelamentos.");
+        if (!ehAdmin(ROLE)) return fail(403, "Só um administrador aprova cancelamentos.");
         if (it.cancelado) return fail(400, "Esta O.S. já está cancelada.");
         if (!it.cancelamento_solicitado) return fail(400, "Nenhum cancelamento pendente para esta O.S.");
         const ag = now();
@@ -339,7 +343,7 @@ function route(method, path, q, body) {
         if (it.cancelado) return fail(400, "Esta O.S. já está cancelada.");
         const ag = now();
         const o = { ...it, cancelamento_solicitado: true, cancelamento_motivo: body.motivo, cancelamento_solicitado_por: QUEM(), cancelamento_solicitado_em: ag, historico: [...(it.historico || []), { hora: ag, etapa: "CANCELAMENTO_SOLICITADO", quem: QUEM() }] };
-        if (ROLE !== "admin") {
+        if (!ehAdmin(ROLE)) {
           put("ordens", o); addLog("OS_CANCELAMENTO_SOLICITADO", o.os, `Motivo: ${body.motivo}`, QUEM());
           return ok({ success: true, pendente: true, data: o });
         }
@@ -368,13 +372,13 @@ function route(method, path, q, body) {
     if (c === "aceitar") { const x = estado.ocorrencias.find(i => i.id === b); if (!x) return fail(404, "Ocorrência não encontrada"); return ok({ success: true, data: put("ocorrencias", { ...x, status: "aceita", aceita_por: QUEM(), aceita_em: now() }) }); }
   }
   if (a === "notificacoes") {
-    if (!b) return ok({ data: estado.notificacoes, nao_lidas: estado.notificacoes.filter(n => !n.lida).length });
+    if (!b) { const lista = comLidasLocais(estado.notificacoes); return ok({ data: lista, nao_lidas: lista.filter(n => !n.lida).length }); }
     if (c === "ler") {
       const x = estado.notificacoes.find(i => i.id === b);
       if (x) {
-        // Operador não grava no banco: marca só nesta tela (a notificação é a mesma para todos).
+        // Operador não grava no banco: marca só neste navegador (a notificação é a mesma para todos).
         if (podeGravar("notificacoes", "update")) put("notificacoes", { ...x, lida: true });
-        else estado.notificacoes = estado.notificacoes.map(n => (n.id === b ? { ...n, lida: true } : n));
+        else { marcarLidaLocal(b); estado.notificacoes = comLidasLocais(estado.notificacoes); }
       }
       return ok({ success: true });
     }
@@ -404,7 +408,7 @@ function route(method, path, q, body) {
     return ok({ data: [], credencial_ok: true });
   }
   if (a === "relatorio" && b === "gerencial2") {
-    if (ROLE !== "admin" && ROLE !== "gerente") return fail(403, "O relatório gerencial é só para gerentes e administradores.");
+    if (!podeEditar(ROLE)) return fail(403, "O relatório gerencial é só para gerentes e administradores.");
     // Resumo executivo (mesma lógica do backend de produção, implementação cmwazfbea00qnhlujmlyko70f)
     const dias = parseInt(q.get("dias") || "30", 10) || 0;
     const agora = new Date();
@@ -478,7 +482,7 @@ window.fetch = async (input, init) => {
   const seg = path.replace(/^\/+/, "").split("/");
   // Usuários: só admin, executado no servidor (Edge Function admin-users)
   if (seg[0] === "users" || seg[0] === "usuarios") {
-    if (ROLE !== "admin") return J({ detail: "Somente administradores." }, 403);
+    if (!ehAdmin(ROLE)) return J({ detail: "Somente administradores." }, 403);
     const call = window.__printUsers; if (!call) return J({ detail: "Indisponível" }, 503);
     const id = seg[1] ? decodeURIComponent(seg[1]) : "";
     try {
@@ -489,9 +493,8 @@ window.fetch = async (input, init) => {
       if (mth === "DELETE") return J(await call("remover", { email: id }));
     } catch (e) { return J({ detail: String(e && e.message || e) }, 400); }
   }
-  const podeEditar = ROLE === "admin" || ROLE === "gerente";
   const soMarcaLida = seg[0] === "notificacoes" && seg[2] === "ler";   // operador marca como lida só na tela
-  if (mth !== "GET" && !soMarcaLida && (!podeEditar || (seg[0] === "configuracoes" && ROLE !== "admin")))
+  if (mth !== "GET" && !soMarcaLida && (!podeEditar(ROLE) || (seg[0] === "configuracoes" && !ehAdmin(ROLE))))
     return J({ detail: "Sem permissão para alterar. Fale com um administrador." }, 403);
   let res;
   try { res = await route(mth, path, new URLSearchParams(qs || ""), body); } catch (e) { res = { s: (e && e.status) || 500, b: { detail: String(e && e.message || e) } }; }

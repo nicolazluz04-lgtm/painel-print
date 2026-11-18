@@ -182,6 +182,7 @@ export function prepararPrestadores(linhas, existentes = []) {
     const nome = texto(r.nome);
     const ignorar = motivo => ignorados.push({ linha, nome, motivo });
     if (!nome) return ignorar("Nome vazio");
+    if (/^exemplo\b/i.test(nome)) return ignorar("Linha de exemplo do modelo (apague-a ou troque pelos dados reais)");
     let doc = digitos(typeof r.cnpj === "number" ? Math.round(r.cnpj) : r.cnpj);
     if (doc && typeof r.cnpj === "number" && doc.length === 13) doc = "0" + doc;   // célula numérica perde o zero à esquerda
     let cnpj = "";

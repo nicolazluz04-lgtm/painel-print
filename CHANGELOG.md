@@ -2,6 +2,22 @@
 
 Formato: [versionamento semântico](https://semver.org/lang/pt-BR/) — MAIOR.MENOR.CORREÇÃO.
 
+## [1.5.0] — 18/11/2026
+### Segurança (revisão de 17/11)
+- Permissões por papel no banco: gerente cria e edita O.S., prestadores e peças; Bases, Configurações e excluir O.S. só administrador; operador só lê.
+- Cancelamento em duas etapas: o gerente solicita, o administrador aprova.
+- Usuário desativado perde todo o acesso; quem não tem cadastro não lê nada.
+- Alertas de SLA gravados pelo servidor a cada 5 min (abrir a tela não grava mais nada).
+- Gestão de usuários consulta o banco para saber quem é administrador e só aceita chamadas do próprio painel.
+- Nomes de pessoas retirados do documento de auditoria.
+### Telas e espaçamentos
+- Escala única de espaçamento; tabelas com rolagem própria; janelas cabem no celular.
+- Celular: O.S. em cartões, com as ações reunidas em "☰ Ações". Notebook: Atendimento em 3 colunas, sem cortes.
+- Botões com tamanho mínimo de toque; teste automático de layout (`fonte/testes/layout.mjs`).
+- Mapa único de papéis (removida a opção "Consultor", que não existia).
+### Corrigido
+- Prestadores: colunas Status e 24h mostravam os valores trocados.
+
 ## [1.4.0] — 16/11/2026
 ### Sincronizado com a produção do CodeWords (commit a3a5805, backend cmwazfbea00qnhlujmlyko70f)
 - Site de produção comparado arquivo por arquivo: código idêntico ao pacote de 09/11; nada a trazer.

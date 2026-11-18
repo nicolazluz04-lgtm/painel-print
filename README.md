@@ -2,20 +2,25 @@
 
 Painel de socorro mecânico da Print: ordens de serviço, prestadores, bases, controle de peças, cancelamentos, frota Sascar e mapas.
 
-- **Site:** https://nicolazluz04-lgtm.github.io/painel-print/
+- **Site:** https://painel-print.vercel.app (principal) · espelho no GitHub Pages: https://nicolazluz04-lgtm.github.io/painel-print/
 - **Banco, login e funções:** Supabase (projeto `painel-print`, região São Paulo)
 - **Versão atual:** veja [CHANGELOG.md](CHANGELOG.md)
 
 ## Estrutura do repositório
 
 ```
-index.html, config.js,          ← site publicado (GitHub Pages serve a raiz da branch main)
+index.html, config.js,          ← site publicado (Vercel e GitHub Pages servem a raiz da branch main)
+vercel.json                       cabeçalhos de segurança do site na Vercel
 claude-shim.js, .nojekyll,
 modelo_cadastro_prestadores.xlsx
 fonte/                          ← código-fonte do painel (React/TSX)
   app/page.tsx                    telas e abas
   components/                     mapas, peças, cancelamentos, configurações, exportação…
   backend.js                      regras do painel (O.S., prestadores, relatórios) sobre o banco
+  importar.js                     leitura e validação das planilhas de prestadores e de O.S.
+  exportar.js                     Excel (O.S., prestadores, relatório analítico) e PDF gerencial
+  lib/api.ts, lib/papeis.ts       chamada única às rotas (com aviso de falha) e mapa de papéis
+  testes/                         teste de layout (Playwright) e testes da importação (node --test)
   sascar.js / brmap.js            status da frota e camadas do mapa
   template.html + build.sh        montagem do index.html
 supabase/
@@ -37,8 +42,9 @@ docs/
    cd fonte && npm install && npm run build
    ```
    Isso regenera o `index.html` na raiz.
-3. Faça commit e push na branch `main`. O GitHub Pages publica em 1–2 minutos.
-4. Para lançar uma versão: atualize o `CHANGELOG.md`, suba a versão em `fonte/package.json` e acrescente a linha `vX.Y.Z <commit>` em `.github/versoes.txt`. Depois do push, o GitHub Actions cria a tag e a release sozinho.
+3. Rode os testes da importação: `node --test fonte/testes/importar.test.mjs` (sem banco e sem rede).
+4. Faça commit e push na branch `main`. A Vercel (endereço principal) e o GitHub Pages (espelho) publicam sozinhos em 1–2 minutos.
+5. Para lançar uma versão: atualize o `CHANGELOG.md`, suba a versão em `fonte/package.json` e acrescente a linha `vX.Y.Z <commit>` em `.github/versoes.txt`. Depois do push, o GitHub Actions cria a tag e a release sozinho.
 
 `claude-shim.js` (login e ligação com o Supabase) e `config.js` (endereço e chave **pública** do Supabase) ficam na raiz e são editados diretamente.
 

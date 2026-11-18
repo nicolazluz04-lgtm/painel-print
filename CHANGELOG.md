@@ -2,6 +2,16 @@
 
 Formato: [versionamento semântico](https://semver.org/lang/pt-BR/) — MAIOR.MENOR.CORREÇÃO.
 
+## [Não lançado]
+### Adicionado
+- Importar planilha de prestadores e de O.S. (.xlsx/.csv), com prévia, motivo de cada linha ignorada e sem apagar nada (T6).
+- "Exportar Excel" gera o relatório analítico (resumo, O.S., por filial, por prestador, por status, escalonamento) (T7).
+- Frota: km do odômetro e última posição da Sascar na escolha da placa, sem gravar no cadastro (T9).
+- Selo "Cancelamento pendente" nas O.S.
+### Corrigido
+- Falha ao gravar no banco agora aparece na tela (antes era ignorada) e a mudança é desfeita.
+- Operador não vê mais o PDF gerencial; gerente não vê Bases, Usuários e "Excluir" em Configurações.
+
 ## [1.5.0] — 18/11/2026
 ### Segurança (revisão de 17/11)
 - Permissões por papel no banco: gerente cria e edita O.S., prestadores e peças; Bases, Configurações e excluir O.S. só administrador; operador só lê.

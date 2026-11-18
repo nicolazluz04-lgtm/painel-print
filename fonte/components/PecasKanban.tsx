@@ -1,18 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
 
 const ETAPAS = ["ORÇANDO", "COMPRADO", "ENVIADO", "RECEBIDO"];
-const API = "/api";
-
-function tkn() { try { return localStorage.getItem("token") || ""; } catch { return ""; } }
-async function api(url: string, init?: RequestInit) {
-  const sep = url.includes("?") ? "&" : "?";
-  try {
-    const r = await fetch(`${API}${url}${sep}token=${encodeURIComponent(tkn())}`, { headers: { "Content-Type": "application/json" }, ...init });
-    const txt = await r.text();
-    try { return JSON.parse(txt); } catch { return {}; }
-  } catch { return {}; }
-}
 
 function horas(desde?: string) {
   if (!desde) return "—";

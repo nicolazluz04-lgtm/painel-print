@@ -1,5 +1,6 @@
 // Backend do painel rodando dentro da página. Intercepta fetch("/api/...") e responde
 // com a mesma lógica das rotas do serviço original, guardando os dados no banco da página.
+import { prepararPrestadores, prepararOrdens, LIMITE_LINHAS } from "./importar.js";
 const COLS = ["prestadores", "ordens", "bases", "acionamentos", "pecas_envio", "log", "ocorrencias", "notificacoes"];
 const estado = { prestadores: [], ordens: [], bases: [], acionamentos: [], pecas_envio: [], log: [], ocorrencias: [], notificacoes: [], frota: [], config: {} };
 const DEF_CONFIG = { escalonamento_gerencia_h: 4, escalonamento_supervisor_h: 2, mostrar_bases: true, mostrar_oficinas: true, raio_km: 100, resumo_ativo: false, resumo_emails: "", resumo_horario: "07:30", sascar_intervalo_min: 5 };
@@ -10,6 +11,7 @@ export function setRole(r) { ROLE = r; }
 export function setUser(u) { usuarioAtual = u || usuarioAtual; ROLE = usuarioAtual.role || "operador"; }
 const QUEM = () => usuarioAtual.email || usuarioAtual.nome || "Usuário";
 export const getState = () => estado;
+export const papelAtual = () => ROLE;
 export const callRoute = (path) => route("GET", path, {}, null).b;
 
 // ── tempo (Brasília) ──
@@ -64,20 +66,41 @@ class SemPermissao extends Error { constructor(msg) { super(msg || "Sem permiss�
 function exigirGravacao(colecao, acao) { if (!podeGravar(colecao, acao)) throw new SemPermissao(); }
 
 // ── persistência ──
-function put(col, obj) {
+// A tela muda na hora; a gravação no banco vem em seguida. Se o banco recusar (sem permissão, sem rede…),
+// a mudança é desfeita na tela e o usuário é avisado (evento "painel:erro-gravacao", mostrado pelo page.tsx).
+const NOMES_COLECAO = { prestadores: "prestador", ordens: "O.S.", bases: "base", acionamentos: "acionamento", pecas_envio: "envio de peça", log: "log", ocorrencias: "ocorrência", notificacoes: "notificação", config: "configurações" };
+function avisarFalhaGravacao(colecao, erro) {
+  const motivo = String((erro && (erro.message || erro.details)) || erro || "erro desconhecido");
+  const msg = `Não foi possível salvar (${NOMES_COLECAO[colecao] || colecao}) no banco: ${motivo}. A alteração foi desfeita na tela.`;
+  console.error(msg, erro);
+  try { window.dispatchEvent(new CustomEvent("painel:erro-gravacao", { detail: { colecao, mensagem: msg } })); } catch (e) { /* sem janela (testes) */ }
+}
+// Grava no banco; em caso de erro, desfaz(). Devolve uma promessa que resolve true/false (nunca rejeita).
+function gravar(colecao, operacao, desfazer, silencioso) {
+  if (!DB) return Promise.resolve(true);
+  return operacao().then(() => true, erro => { desfazer(); if (!silencioso) avisarFalhaGravacao(colecao, erro); return false; });
+}
+function put(col, obj, opcoes = {}) {
   const i = estado[col].findIndex(x => x.id === obj.id);
   exigirGravacao(col, i >= 0 ? "update" : "insert");
-  if (i >= 0) { if (!obj._k && estado[col][i]._k) obj._k = estado[col][i]._k; estado[col][i] = obj; } else estado[col].unshift(obj);
-  if (DB) { const { _k, ...clean } = obj; DB.collection(col).doc(_k || obj.id).set(clean).catch(() => {}); }
+  const anterior = i >= 0 ? estado[col][i] : null;
+  if (anterior) { if (!obj._k && anterior._k) obj._k = anterior._k; estado[col][i] = obj; } else estado[col].unshift(obj);
+  const { _k, ...clean } = obj;
+  const gravado = gravar(col, () => DB.collection(col).doc(_k || obj.id).set(clean), () => {
+    // Desfaz só se ninguém mexeu nesse registro depois (tempo real ou outra edição).
+    const j = estado[col].indexOf(obj); if (j < 0) return;
+    if (anterior) estado[col][j] = anterior; else estado[col].splice(j, 1);
+  }, opcoes.silencioso);
+  if (opcoes.aoGravar) opcoes.aoGravar(gravado);
   return obj;
 }
 function del(col, id) {
   exigirGravacao(col, "delete");
   const x = estado[col].find(i => i.id === id);
   estado[col] = estado[col].filter(i => i.id !== id);
-  if (DB) DB.collection(col).doc((x && x._k) || id).delete().catch(() => {});
+  gravar(col, () => DB.collection(col).doc((x && x._k) || id).delete(), () => { if (x && !estado[col].some(i => i.id === id)) estado[col].unshift(x); });
 }
-function saveConfig() { if (DB) DB.collection("config").doc("main").set(estado.config).catch(() => {}); }
+function saveConfig(anterior) { gravar("config", () => DB.collection("config").doc("main").set(estado.config), () => { estado.config = anterior; }); }
 function addLog(evento, os, detalhe, quem = "Sistema") {
   put("log", { id: uid(), evento, os, detalhe, quem, created_at: now() });
 }
@@ -88,7 +111,7 @@ export function startBackend(db) {
   DB = db;
   if (!db) { readyRes(); return; }
   let faltam = COLS.length + 3; const umaPronta = () => { if (--faltam <= 0) readyRes(); };
-  setTimeout(readyRes, 8000);
+  const limite = setTimeout(readyRes, 8000); if (limite && limite.unref) limite.unref();   // não segura o processo nos testes
   // Assina a coleção; chama aoPrimeiro uma única vez, no primeiro snapshot ou no primeiro erro.
   const ouvir = (colecao, aoMudar, aoPrimeiro = () => {}) => {
     let primeiro = true; const marcar = () => { if (primeiro) { primeiro = false; aoPrimeiro(); } };
@@ -172,6 +195,66 @@ function alerts() {
 }
 const nextOs = () => String(estado.ordens.reduce((m, o) => Math.max(m, parseInt(o.os, 10) || 0), 0) + 1).padStart(6, "0");
 
+// ── frota (T9): cadastro frota_placas + posição ao vivo da Sascar (sascar_pos) ──
+// Só leitura: o km e a última posição vêm da Sascar na hora de consultar; nada é gravado em frota_placas
+// (essa coleção continua só para administradores). Placa que a Sascar vê e o cadastro não tem aparece
+// com origem "sascar" (sem filial/modelo, que a Sascar não informa nas posições).
+const placaBase = v => String(v || "").trim().toUpperCase().replace(/-\d+$/, "");
+function frotaComSascar() {
+  const pos = (estado.sascar && estado.sascar.data) || {};
+  const porPlaca = {};
+  Object.values(pos).forEach(p => { if (p && p.placa) { const k = placaBase(p.placa); if (!porPlaca[k] || String(p.data || "") > String(porPlaca[k].data || "")) porPlaca[k] = p; } });
+  const vistas = new Set();
+  const lista = estado.frota.map(f => {
+    const k = placaBase(f.placa); vistas.add(k);
+    const p = porPlaca[k]; if (!p) return f;
+    const odo = Number(p.odometro) || 0, kmCad = Number(f.km_ultimo) || 0;
+    return { ...f, km_ultimo: odo > kmCad ? odo : f.km_ultimo, km_fonte: odo > kmCad ? "sascar" : (f.km_fonte || "cadastro"), ultima_posicao: { lat: p.lat, lng: p.lng, data: p.data, cidade: p.cidade, uf: p.uf } };
+  });
+  Object.entries(porPlaca).forEach(([k, p]) => {
+    if (vistas.has(k)) return;
+    lista.push({ placa: k, filial: "", modelo: "", marca: "", origem: "sascar", km_ultimo: Number(p.odometro) || undefined, km_fonte: "sascar", ultima_posicao: { lat: p.lat, lng: p.lng, data: p.data, cidade: p.cidade, uf: p.uf } });
+  });
+  return lista;
+}
+
+// ── importação de planilhas (T6) ──
+// O navegador lê o arquivo (importar.js → lerPlanilha) e manda as linhas; aqui validamos contra o que já existe
+// e, se não for simulação, criamos os registros novos. Nunca apaga nem altera o que já está cadastrado.
+const LOTE_IMPORTACAO = 25;
+async function importarLinhas(colecao, body, preparar, montar, evento) {
+  exigirGravacao(colecao, "insert");
+  const linhas = body && body.linhas;
+  if (!Array.isArray(linhas)) return { s: 400, b: { detail: "Envie as linhas da planilha." } };
+  if (linhas.length > LIMITE_LINHAS) return { s: 400, b: { detail: `A planilha tem ${linhas.length} linhas; o limite é ${LIMITE_LINHAS} por arquivo.` } };
+  const { novos, ignorados } = preparar(linhas);
+  if (body.simular) return { s: 200, b: { success: true, simulacao: true, prontos: novos.length, ignorados } };
+  const falhas = [];
+  for (let i = 0; i < novos.length; i += LOTE_IMPORTACAO) {
+    await Promise.all(novos.slice(i, i + LOTE_IMPORTACAO).map(({ _linha, ...item }) => {
+      let gravado = Promise.resolve(true);
+      const obj = put(colecao, montar(item), { silencioso: true, aoGravar: g => { gravado = g; } });
+      return gravado.then(ok => { if (!ok) falhas.push({ linha: _linha, nome: obj.nome || (obj.os ? "O.S. " + obj.os : ""), motivo: "O banco recusou a gravação" }); });
+    }));
+  }
+  const importados = novos.length - falhas.length;
+  if (importados) addLog(evento, "", `${importados} importado(s) por planilha; ${ignorados.length} ignorado(s)${falhas.length ? `; ${falhas.length} com falha` : ""}`, QUEM());
+  if (falhas.length) avisarFalhaGravacao(colecao, `${falhas.length} de ${novos.length} registro(s) não foram gravados`);
+  return { s: 200, b: { success: falhas.length === 0, importados, ignorados, falhas } };
+}
+const importarPrestadores = body => importarLinhas("prestadores", body,
+  linhas => prepararPrestadores(linhas, estado.prestadores),
+  p => ({ ...p, id: uid(), created_at: now(), importado_em: now() }), "PRESTADORES_IMPORTADOS");
+const importarOrdens = body => importarLinhas("ordens", body,
+  linhas => prepararOrdens(linhas, estado.ordens, estado.prestadores, now()),
+  item => {
+    const o = { ...item, id: uid(), created_at: now(), importado_em: now(), criado_por: QUEM(), criado_login: usuarioAtual.email, criado_perfil: ROLE };
+    ["motorista", "operador", "modelo", "marca", "rodovia", "localizacao"].forEach(k => { if (o[k]) o[k] = capitalizar(o[k]); });
+    o.veiculo = [o.marca, o.modelo, o.placa].filter(Boolean).join(" ").trim();
+    o.historico = [{ hora: now(), etapa: "OS_IMPORTADA", quem: o.criado_por }];
+    return o;
+  }, "OS_IMPORTADAS");
+
 // ── rotas ──
 function route(method, path, q, body) {
   const seg = path.split("/").filter(Boolean), [a, b, c, d] = seg;
@@ -180,6 +263,8 @@ function route(method, path, q, body) {
     if (!b) {
       if (method === "GET") return ok({ data: estado.prestadores, total: estado.prestadores.length });
       if (method === "POST") return ok({ success: true, data: put("prestadores", { ...body, id: uid(), created_at: now() }) });
+    } else if (b === "import") {
+      if (method === "POST") return importarPrestadores(body);
     } else {
       const p = estado.prestadores.find(x => x.id === b); if (!p) return fail(404, "Prestador não encontrado");
       if (method === "PUT") return ok({ success: true, data: put("prestadores", { ...p, ...body, id: b }) });
@@ -207,6 +292,8 @@ function route(method, path, q, body) {
         put("ordens", o); addLog("OS_CRIADA", o.os, `O.S. ${o.os} criada`, o.criado_por);
         return ok({ success: true, data: o });
       }
+    } else if (b === "import") {
+      if (method === "POST") return importarOrdens(body);
     } else if (b === "cancelamentos" && c === "pendentes") {
       const l = estado.ordens.filter(o => o.cancelamento_solicitado && !o.cancelado); return ok({ data: l, total: l.length });
     } else {
@@ -274,8 +361,8 @@ function route(method, path, q, body) {
     if (!b) { if (method === "GET") return ok({ data: estado.bases }); if (method === "POST") return ok({ success: true, data: put("bases", { ...body, id: uid(), created_at: now() }) }); }
     else { const x = estado.bases.find(i => i.id === b); if (!x) return fail(404, "Base não encontrada"); if (method === "PUT") return ok({ success: true, data: put("bases", { ...x, ...body, id: b }) }); if (method === "DELETE") { del("bases", b); return ok({ success: true }); } }
   }
-  if (a === "frota" && b === "placas") return ok({ data: estado.frota, total: estado.frota.length });
-  if (a === "frota" && b === "placa") { const x = estado.frota.find(i => i.placa === decodeURIComponent(c || "").toUpperCase()); return x ? ok({ data: x }) : fail(404, "Placa não encontrada"); }
+  if (a === "frota" && b === "placas") { const l = frotaComSascar(); return ok({ data: l, total: l.length, so_sascar: l.filter(x => x.origem === "sascar").length }); }
+  if (a === "frota" && b === "placa") { const pl = placaBase(decodeURIComponent(c || "")); const x = frotaComSascar().find(i => placaBase(i.placa) === pl); return x ? ok({ data: x }) : fail(404, "Placa não encontrada"); }
   if (a === "ocorrencias") {
     if (!b) return ok({ data: estado.ocorrencias });
     if (c === "aceitar") { const x = estado.ocorrencias.find(i => i.id === b); if (!x) return fail(404, "Ocorrência não encontrada"); return ok({ success: true, data: put("ocorrencias", { ...x, status: "aceita", aceita_por: QUEM(), aceita_em: now() }) }); }
@@ -293,8 +380,8 @@ function route(method, path, q, body) {
     }
   }
   if (a === "configuracoes") {
-    if (method === "PUT") { exigirGravacao("config", "update"); estado.config = { ...DEF_CONFIG, ...estado.config, ...body }; saveConfig(); }
-    const cfg = { ...DEF_CONFIG, ...estado.config }; return ok({ ...cfg, data: cfg });
+    if (method === "PUT") { exigirGravacao("config", "update"); const anterior = estado.config; estado.config = { ...DEF_CONFIG, ...estado.config, ...body }; saveConfig(anterior); }
+    const cfg = { ...DEF_CONFIG, ...estado.config }; return ok({ ...cfg, data: cfg, success: true });
   }
   if (a === "pecas-envio") {
     if (!b) {
@@ -407,6 +494,6 @@ window.fetch = async (input, init) => {
   if (mth !== "GET" && !soMarcaLida && (!podeEditar || (seg[0] === "configuracoes" && ROLE !== "admin")))
     return J({ detail: "Sem permissão para alterar. Fale com um administrador." }, 403);
   let res;
-  try { res = route(mth, path,new URLSearchParams(qs || ""), body); } catch (e) { res = { s: (e && e.status) || 500, b: { detail: String(e && e.message || e) } }; }
+  try { res = await route(mth, path, new URLSearchParams(qs || ""), body); } catch (e) { res = { s: (e && e.status) || 500, b: { detail: String(e && e.message || e) } }; }
   return new Response(JSON.stringify(res.b), { status: res.s, headers: { "Content-Type": "application/json" } });
 };

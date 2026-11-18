@@ -1,6 +1,6 @@
 {
   "name": "painel-print",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "private": true,
   "description": "Painel Print Socorro — código-fonte do site (React) montado em ../index.html",
   "scripts": { "build": "bash build.sh", "teste:layout": "node testes/layout.mjs" },

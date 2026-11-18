@@ -2,7 +2,7 @@
 
 Formato: [versionamento semântico](https://semver.org/lang/pt-BR/) — MAIOR.MENOR.CORREÇÃO.
 
-## [Não lançado]
+## [1.6.0] — 18/11/2026
 ### Adicionado
 - Importar planilha de prestadores e de O.S. (.xlsx/.csv), com prévia, motivo de cada linha ignorada e sem apagar nada (T6).
 - "Exportar Excel" gera o relatório analítico (resumo, O.S., por filial, por prestador, por status, escalonamento) (T7).

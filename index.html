@@ -401,7 +401,7 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
       L.polygon(CONT, { color: "#b9b39d", weight: 1, fillColor: "#e7e3d3", fillOpacity: 1, interactive: false }).addTo(vec);
       for (let lat = -35; lat <= 10; lat += 5) L.polyline([[lat, -85], [lat, -25]], { color: "#7da7bd", weight: 0.6, opacity: 0.55, dashArray: "2 5", interactive: false }).addTo(vec);
       for (let lng = -80; lng <= -30; lng += 5) L.polyline([[-58, lng], [14, lng]], { color: "#7da7bd", weight: 0.6, opacity: 0.55, dashArray: "2 5", interactive: false }).addTo(vec);
-      S3.split("|").forEach((p) => {
+      S2.split("|").forEach((p) => {
         const pts = p.split(" ").map((s) => {
           const [x, y] = s.split(",");
           return [parseFloat(y), parseFloat(x)];
@@ -492,10 +492,10 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
     } catch (e) {
     }
   }
-  var S3, CONT, CID, ROD;
+  var S2, CONT, CID, ROD;
   var init_brmap = __esm({
     "brmap.js"() {
-      S3 = "-66.8,-9.8 -67.2,-10.3 -67.7,-10.7 -68.3,-11.0 -69.2,-11.0 -70.1,-11.0 -70.6,-10.5 -70.5,-9.7 -71.2,-9.9 -72.2,-10.0 -72.6,-9.5 -73.0,-9.0 -73.4,-8.4 -73.8,-7.9 -73.2,-7.3 -72.4,-7.6 -71.4,-7.7 -70.5,-7.8 -69.8,-8.1 -69.3,-8.5 -68.7,-9.0 -68.0,-9.4 -67.2,-9.6 -66.8,-9.8|-35.2,-8.9 -35.5,-9.4 -36.0,-9.9 -36.4,-10.5 -36.9,-10.1 -37.5,-9.8 -38.1,-9.5 -37.8,-8.9 -37.2,-9.2 -36.3,-9.2 -35.8,-8.8 -35.2,-8.9|-67.3,2.0 -67.1,1.3 -66.3,0.8 -65.7,1.0 -65.0,1.2 -64.3,1.5 -63.9,2.0 -63.1,2.2 -62.8,1.6 -62.5,1.0 -62.4,0.2 -62.3,-0.6 -62.0,-1.2 -61.5,-0.8 -60.7,-0.9 -60.3,-0.4 -60.0,0.3 -58.9,0.3 -58.7,-0.5 -58.4,-1.1 -57.8,-1.4 -57.2,-1.7 -56.7,-2.2 -56.7,-3.1 -57.1,-4.0 -57.5,-4.8 -57.9,-5.6 -58.3,-6.5 -58.2,-7.3 -58.3,-8.1 -58.5,-8.8 -59.4,-8.8 -60.4,-8.8 -61.6,-8.8 -62.3,-8.6 -62.7,-8.1 -63.5,-8.0 -64.0,-8.5 -64.4,-9.0 -65.0,-9.3 -65.7,-9.5 -66.5,-9.6 -67.5,-9.6 -68.2,-9.2 -68.9,-8.8 -69.4,-8.4 -70.0,-7.9 -70.8,-7.8 -71.6,-7.7 -72.6,-7.6 -73.7,-7.1 -73.4,-6.6 -73.2,-5.9 -72.9,-5.3 -72.4,-4.9 -71.8,-4.5 -71.0,-4.4 -70.3,-4.2 -69.8,-3.7 -69.7,-2.9 -69.5,-1.9 -69.4,-1.1 -69.7,-0.5 -70.0,0.1 -69.7,0.6 -69.8,1.6 -68.7,1.7 -67.9,1.9 -67.4,2.2 -67.3,2.0|-50.1,0.7 -50.6,0.2 -51.2,-0.1 -51.6,-0.7 -52.0,-1.2 -52.5,-0.8 -52.8,-0.2 -53.2,0.4 -53.4,1.0 -53.9,1.5 -54.5,1.8 -54.9,2.4 -54.2,2.2 -53.4,2.3 -52.6,2.4 -52.3,3.1 -52.0,3.6 -51.6,4.2 -51.1,3.8 -51.0,3.0 -50.7,2.3 -50.2,1.8 -49.9,1.2 -50.1,0.7|-39.3,-8.6 -38.7,-8.9 -38.2,-9.3 -38.0,-10.0 -38.1,-10.7 -37.9,-11.4 -37.7,-12.1 -38.0,-12.6 -38.6,-13.0 -38.9,-13.6 -39.0,-14.4 -39.0,-15.3 -39.0,-16.2 -39.1,-16.9 -39.2,-17.8 -39.6,-18.2 -40.3,-17.9 -40.6,-17.4 -40.3,-16.7 -39.9,-16.2 -40.4,-15.8 -41.3,-15.7 -41.7,-15.2 -42.4,-15.0 -43.0,-14.7 -43.9,-14.6 -44.4,-14.3 -45.0,-14.6 -45.6,-15.0 -46.0,-14.5 -46.3,-13.8 -46.2,-13.0 -46.4,-12.3 -46.1,-11.6 -46.6,-11.3 -46.2,-10.7 -45.7,-10.3 -45.3,-10.8 -44.5,-10.6 -43.9,-10.3 -43.8,-9.5 -42.9,-9.5 -42.2,-9.3 -41.6,-9.0 -40.8,-9.1 -39.9,-9.0 -39.4,-8.6 -39.3,-8.6|-37.3,-4.8 -37.8,-5.2 -38.1,-5.8 -38.6,-6.3 -38.8,-7.0 -38.9,-7.8 -39.5,-7.5 -40.3,-7.3 -40.6,-6.7 -40.9,-6.1 -40.9,-5.2 -41.2,-4.6 -41.3,-3.7 -41.1,-2.9 -40.3,-2.8 -39.6,-3.1 -39.0,-3.4 -38.4,-3.8 -38.0,-4.2 -37.5,-4.6 -37.3,-4.8|-47.5,-15.5 -47.9,-16.1 -47.5,-15.5|-40.5,-17.9 -39.9,-18.2 -39.7,-19.1 -40.0,-19.8 -40.3,-20.4 -40.7,-20.8 -41.3,-21.2 -41.7,-20.8 -41.5,-20.2 -41.1,-19.6 -41.2,-18.9 -41.0,-18.2 -40.5,-17.9|-50.2,-12.4 -49.8,-13.0 -49.1,-12.8 -48.6,-13.2 -47.8,-13.3 -47.1,-13.2 -46.4,-12.8 -46.2,-13.5 -46.0,-14.2 -46.3,-14.9 -46.9,-15.2 -47.1,-16.0 -47.5,-15.5 -48.2,-15.7 -47.7,-16.1 -47.3,-16.6 -47.5,-17.3 -47.3,-18.0 -47.8,-18.4 -48.6,-18.3 -49.3,-18.6 -50.2,-18.7 -50.6,-19.1 -51.5,-19.1 -52.2,-18.9 -52.9,-18.6 -53.1,-17.9 -53.1,-17.1 -52.7,-16.6 -52.3,-16.0 -51.8,-15.6 -51.5,-15.0 -51.0,-14.6 -50.9,-13.8 -50.6,-13.2 -50.3,-12.5 -50.2,-12.4|-45.8,-1.0 -45.3,-1.4 -44.7,-1.7 -44.4,-2.3 -43.5,-2.4 -42.8,-2.6 -42.0,-2.7 -42.2,-3.4 -42.7,-3.9 -42.9,-4.6 -43.0,-5.5 -42.9,-6.3 -43.3,-6.8 -44.1,-6.9 -44.6,-7.3 -45.2,-7.6 -45.6,-8.1 -45.9,-8.7 -45.8,-9.6 -46.1,-10.2 -46.6,-9.7 -46.9,-9.1 -46.8,-8.4 -47.2,-7.9 -47.5,-7.3 -47.4,-6.4 -47.5,-5.6 -48.1,-5.3 -47.8,-4.6 -47.4,-4.2 -47.0,-3.6 -46.7,-3.0 -46.4,-2.4 -46.2,-1.7 -45.9,-1.1 -45.8,-1.0|-44.2,-14.2 -43.8,-14.7 -42.9,-14.8 -42.3,-15.1 -41.5,-15.4 -40.8,-15.7 -40.2,-15.9 -40.3,-16.7 -40.6,-17.3 -40.2,-17.8 -40.8,-18.2 -41.0,-18.8 -41.1,-19.6 -41.5,-20.2 -41.9,-20.7 -42.2,-21.3 -42.6,-21.8 -43.3,-22.0 -44.1,-22.2 -44.8,-22.4 -45.4,-22.7 -46.1,-22.9 -46.5,-22.5 -46.5,-21.6 -47.1,-21.2 -47.2,-20.5 -47.7,-20.0 -48.5,-20.1 -49.2,-20.3 -49.7,-19.9 -50.5,-19.8 -50.4,-18.9 -49.8,-18.6 -49.1,-18.4 -48.3,-18.3 -47.5,-18.2 -47.4,-17.3 -47.4,-16.5 -47.1,-15.9 -46.9,-15.2 -46.4,-14.8 -45.9,-15.2 -45.3,-14.8 -44.7,-14.5 -44.2,-14.2|-56.1,-17.2 -55.5,-17.5 -54.6,-17.5 -53.8,-17.4 -53.6,-18.0 -53.0,-18.3 -52.4,-18.7 -51.9,-19.0 -51.2,-19.3 -51.0,-20.0 -51.4,-20.5 -51.8,-21.0 -52.1,-21.7 -52.5,-22.2 -53.0,-22.5 -53.6,-22.9 -53.9,-23.4 -54.2,-24.1 -55.1,-24.0 -55.5,-23.5 -55.6,-22.7 -56.1,-22.3 -57.0,-22.2 -57.8,-22.1 -57.9,-21.3 -58.0,-20.5 -58.0,-19.6 -57.7,-18.9 -57.5,-18.2 -57.8,-17.6 -57.0,-17.6 -56.3,-17.3 -56.1,-17.2|-57.6,-8.7 -57.1,-9.1 -56.3,-9.4 -55.2,-9.5 -54.3,-9.6 -53.5,-9.6 -52.4,-9.7 -51.5,-9.8 -50.3,-9.8 -50.5,-10.5 -50.7,-11.3 -50.7,-12.2 -50.5,-13.0 -50.8,-13.6 -51.0,-14.4 -51.2,-15.0 -51.7,-15.5 -52.2,-15.9 -52.7,-16.3 -53.0,-16.9 -53.2,-17.6 -53.7,-18.0 -54.2,-17.6 -55.1,-17.7 -55.7,-17.3 -56.6,-17.3 -57.1,-17.8 -57.9,-17.4 -58.4,-17.1 -58.3,-16.3 -59.5,-16.3 -60.2,-15.9 -60.6,-15.1 -60.4,-14.4 -60.7,-13.7 -60.3,-13.2 -60.0,-12.5 -60.1,-11.7 -60.3,-11.1 -61.4,-11.0 -61.6,-10.2 -61.6,-9.4 -61.2,-8.8 -60.1,-8.8 -59.1,-8.8 -58.4,-8.6 -58.3,-7.8 -57.7,-8.1 -57.6,-8.7|-55.0,2.6 -54.8,1.9 -54.1,1.6 -53.5,1.3 -53.2,0.7 -53.0,0.0 -52.6,-0.6 -52.3,-1.1 -51.7,-0.8 -51.3,-0.3 -50.8,0.1 -50.3,0.7 -49.8,0.3 -49.2,-0.1 -48.5,-0.2 -48.0,-0.7 -47.2,-0.7 -46.4,-0.9 -46.1,-1.5 -46.3,-2.2 -46.6,-2.9 -46.9,-3.4 -47.3,-4.0 -47.6,-4.6 -48.2,-4.9 -48.8,-5.3 -48.1,-5.6 -48.4,-6.3 -48.8,-6.8 -49.2,-7.3 -49.2,-8.2 -49.6,-8.8 -50.0,-9.3 -50.7,-9.8 -52.3,-9.7 -53.1,-9.6 -54.1,-9.6 -55.0,-9.5 -56.2,-9.4 -56.9,-9.2 -57.4,-8.8 -57.7,-8.2 -58.0,-7.5 -58.3,-7.0 -58.0,-6.0 -57.7,-5.3 -57.4,-4.5 -57.0,-3.8 -56.6,-3.0 -56.4,-2.3 -57.0,-1.9 -57.5,-1.6 -58.0,-1.1 -58.6,-0.8 -58.9,-0.2 -58.9,0.9 -58.5,1.4 -57.9,1.7 -57.2,2.0 -56.3,1.9 -56.0,2.5 -55.1,2.6 -55.0,2.6|-37.2,-6.0 -37.5,-6.7 -36.7,-6.9 -36.4,-6.3 -35.6,-6.5 -34.9,-6.7 -34.8,-7.5 -35.5,-7.6 -36.3,-7.8 -36.8,-8.2 -37.2,-7.7 -38.0,-7.8 -38.7,-7.6 -38.6,-6.8 -38.1,-6.5 -37.5,-6.1 -37.2,-6.0|-40.2,-7.4 -39.5,-7.6 -38.7,-7.7 -37.8,-7.6 -37.2,-7.3 -37.1,-8.1 -36.4,-7.9 -35.7,-7.7 -35.1,-7.4 -34.9,-8.0 -35.1,-8.7 -35.8,-8.9 -36.4,-9.2 -37.3,-9.2 -38.1,-9.2 -38.7,-8.9 -39.3,-8.6 -39.9,-8.9 -40.3,-9.4 -40.9,-9.0 -40.7,-8.2 -40.6,-7.4 -40.2,-7.4|-41.8,-2.8 -41.4,-3.4 -41.2,-4.0 -41.2,-4.9 -40.9,-5.5 -40.8,-6.3 -40.4,-6.8 -40.7,-7.5 -40.8,-8.3 -41.3,-8.7 -41.8,-9.1 -42.4,-9.4 -43.3,-9.4 -43.7,-9.9 -44.0,-10.5 -44.7,-10.8 -45.4,-10.6 -46.0,-10.2 -45.8,-9.5 -45.8,-8.6 -45.5,-7.9 -45.0,-7.5 -44.5,-7.2 -44.0,-6.7 -43.1,-6.7 -43.1,-5.8 -42.8,-5.2 -42.9,-4.4 -42.7,-3.7 -42.1,-3.4 -41.8,-2.8|-41.8,-20.8 -41.3,-21.2 -41.0,-21.8 -41.5,-22.2 -42.0,-22.7 -42.6,-22.9 -43.5,-23.0 -44.4,-23.0 -44.7,-22.5 -44.1,-22.2 -43.4,-22.0 -42.6,-21.9 -42.2,-21.3 -41.9,-20.8 -41.8,-20.8|-35.0,-6.5 -35.9,-6.5 -36.6,-6.7 -37.5,-6.7 -37.2,-6.1 -37.8,-6.4 -38.1,-5.7 -37.7,-5.1 -37.0,-4.9 -36.2,-5.1 -35.5,-5.2 -35.2,-5.9 -35.0,-6.5|-62.9,-8.0 -62.4,-8.4 -61.9,-8.9 -61.6,-9.4 -61.5,-10.3 -61.0,-11.0 -60.2,-11.1 -60.1,-11.9 -60.1,-12.8 -60.4,-13.4 -61.2,-13.5 -62.0,-13.4 -62.5,-13.1 -63.1,-12.7 -63.7,-12.4 -64.5,-12.3 -65.0,-11.9 -65.3,-11.3 -65.4,-10.5 -65.6,-9.8 -66.5,-9.9 -66.0,-9.4 -65.2,-9.3 -64.6,-9.0 -64.0,-8.7 -63.7,-8.1 -62.9,-8.0|-58.9,1.2 -58.9,0.3 -60.0,0.3 -60.3,-0.3 -60.6,-0.9 -61.2,-0.5 -61.5,-1.1 -62.3,-0.9 -62.3,0.0 -62.5,0.7 -62.7,1.5 -63.0,2.0 -63.6,2.4 -64.1,2.9 -64.2,3.6 -64.7,4.1 -64.0,3.9 -63.1,3.8 -62.5,4.1 -61.7,4.3 -61.1,4.5 -60.6,4.9 -60.1,4.5 -59.6,4.1 -59.8,3.4 -59.9,2.6 -59.7,1.9 -59.3,1.4 -58.9,1.2|-49.7,-29.3 -50.1,-29.9 -50.4,-30.6 -50.8,-31.1 -51.3,-31.6 -51.8,-31.9 -51.3,-31.5 -51.0,-30.9 -50.6,-30.3 -51.2,-30.0 -51.4,-30.8 -51.8,-31.3 -52.2,-31.8 -52.4,-32.6 -52.7,-33.3 -53.3,-33.7 -53.2,-32.9 -52.6,-32.5 -53.5,-32.5 -53.9,-32.0 -54.5,-31.7 -55.0,-31.3 -55.5,-30.9 -56.2,-30.7 -56.6,-30.2 -57.5,-30.3 -57.1,-29.7 -56.7,-29.3 -56.2,-28.8 -55.7,-28.3 -55.2,-27.9 -54.6,-27.5 -54.0,-27.2 -53.2,-27.1 -52.4,-27.3 -51.7,-27.5 -51.1,-27.8 -50.7,-28.3 -49.9,-28.5 -50.1,-29.2 -49.7,-29.3|-48.6,-26.0 -48.6,-26.9 -48.4,-27.6 -48.7,-28.3 -49.2,-28.8 -49.7,-29.3 -49.8,-28.5 -50.6,-28.4 -51.1,-27.9 -51.6,-27.5 -52.3,-27.3 -53.0,-27.1 -53.8,-27.0 -53.6,-26.3 -52.8,-26.3 -52.1,-26.5 -51.3,-26.7 -50.8,-26.2 -50.1,-26.0 -49.2,-26.0 -48.6,-26.0|-36.4,-10.5 -37.0,-10.9 -37.3,-11.4 -38.0,-11.2 -37.9,-10.4 -38.0,-9.7 -37.3,-9.9 -36.8,-10.2 -36.4,-10.5|-48.4,-5.2 -47.7,-5.4 -47.4,-6.1 -47.5,-6.9 -47.4,-7.7 -46.7,-7.9 -46.9,-8.6 -46.8,-9.4 -46.5,-10.0 -45.8,-10.3 -46.2,-10.7 -46.6,-11.3 -46.3,-11.9 -46.3,-12.8 -46.9,-13.1 -47.7,-13.2 -48.5,-13.3 -49.0,-12.9 -49.8,-13.0 -50.2,-12.5 -50.7,-12.1 -50.7,-11.2 -50.5,-10.4 -50.2,-9.8 -49.9,-9.1 -49.5,-8.6 -49.2,-8.0 -49.2,-7.1 -48.7,-6.7 -48.3,-6.1 -48.5,-5.4 -48.4,-5.2|-48.1,-25.3 -48.5,-25.8 -49.2,-26.0 -50.1,-26.0 -50.8,-26.2 -51.3,-26.7 -52.1,-26.5 -52.8,-26.3 -53.6,-26.3 -53.9,-25.6 -54.6,-25.5 -54.4,-24.8 -54.2,-24.0 -53.9,-23.4 -53.5,-22.9 -52.9,-22.6 -52.1,-22.5 -51.3,-22.7 -50.7,-23.0 -49.9,-23.0 -49.6,-23.6 -49.3,-24.2 -48.8,-24.7 -48.3,-25.0 -48.1,-25.3|-50.5,-19.8 -49.7,-19.9 -49.2,-20.3 -48.5,-20.1 -47.7,-20.0 -47.3,-20.5 -47.1,-21.2 -46.5,-21.5 -46.7,-22.2 -46.3,-22.8 -45.6,-22.6 -44.9,-22.4 -44.2,-22.6 -44.8,-23.0 -45.1,-23.5 -45.8,-23.8 -46.4,-24.0 -47.0,-24.3 -47.5,-24.7 -47.9,-25.2 -48.6,-24.9 -49.3,-24.7 -49.5,-24.0 -49.6,-23.3 -50.2,-23.0 -51.0,-22.8 -51.7,-22.6 -52.6,-22.6 -52.3,-21.9 -51.9,-21.4 -51.6,-20.8 -51.2,-20.3 -50.7,-19.9 -50.5,-19.8";
+      S2 = "-66.8,-9.8 -67.2,-10.3 -67.7,-10.7 -68.3,-11.0 -69.2,-11.0 -70.1,-11.0 -70.6,-10.5 -70.5,-9.7 -71.2,-9.9 -72.2,-10.0 -72.6,-9.5 -73.0,-9.0 -73.4,-8.4 -73.8,-7.9 -73.2,-7.3 -72.4,-7.6 -71.4,-7.7 -70.5,-7.8 -69.8,-8.1 -69.3,-8.5 -68.7,-9.0 -68.0,-9.4 -67.2,-9.6 -66.8,-9.8|-35.2,-8.9 -35.5,-9.4 -36.0,-9.9 -36.4,-10.5 -36.9,-10.1 -37.5,-9.8 -38.1,-9.5 -37.8,-8.9 -37.2,-9.2 -36.3,-9.2 -35.8,-8.8 -35.2,-8.9|-67.3,2.0 -67.1,1.3 -66.3,0.8 -65.7,1.0 -65.0,1.2 -64.3,1.5 -63.9,2.0 -63.1,2.2 -62.8,1.6 -62.5,1.0 -62.4,0.2 -62.3,-0.6 -62.0,-1.2 -61.5,-0.8 -60.7,-0.9 -60.3,-0.4 -60.0,0.3 -58.9,0.3 -58.7,-0.5 -58.4,-1.1 -57.8,-1.4 -57.2,-1.7 -56.7,-2.2 -56.7,-3.1 -57.1,-4.0 -57.5,-4.8 -57.9,-5.6 -58.3,-6.5 -58.2,-7.3 -58.3,-8.1 -58.5,-8.8 -59.4,-8.8 -60.4,-8.8 -61.6,-8.8 -62.3,-8.6 -62.7,-8.1 -63.5,-8.0 -64.0,-8.5 -64.4,-9.0 -65.0,-9.3 -65.7,-9.5 -66.5,-9.6 -67.5,-9.6 -68.2,-9.2 -68.9,-8.8 -69.4,-8.4 -70.0,-7.9 -70.8,-7.8 -71.6,-7.7 -72.6,-7.6 -73.7,-7.1 -73.4,-6.6 -73.2,-5.9 -72.9,-5.3 -72.4,-4.9 -71.8,-4.5 -71.0,-4.4 -70.3,-4.2 -69.8,-3.7 -69.7,-2.9 -69.5,-1.9 -69.4,-1.1 -69.7,-0.5 -70.0,0.1 -69.7,0.6 -69.8,1.6 -68.7,1.7 -67.9,1.9 -67.4,2.2 -67.3,2.0|-50.1,0.7 -50.6,0.2 -51.2,-0.1 -51.6,-0.7 -52.0,-1.2 -52.5,-0.8 -52.8,-0.2 -53.2,0.4 -53.4,1.0 -53.9,1.5 -54.5,1.8 -54.9,2.4 -54.2,2.2 -53.4,2.3 -52.6,2.4 -52.3,3.1 -52.0,3.6 -51.6,4.2 -51.1,3.8 -51.0,3.0 -50.7,2.3 -50.2,1.8 -49.9,1.2 -50.1,0.7|-39.3,-8.6 -38.7,-8.9 -38.2,-9.3 -38.0,-10.0 -38.1,-10.7 -37.9,-11.4 -37.7,-12.1 -38.0,-12.6 -38.6,-13.0 -38.9,-13.6 -39.0,-14.4 -39.0,-15.3 -39.0,-16.2 -39.1,-16.9 -39.2,-17.8 -39.6,-18.2 -40.3,-17.9 -40.6,-17.4 -40.3,-16.7 -39.9,-16.2 -40.4,-15.8 -41.3,-15.7 -41.7,-15.2 -42.4,-15.0 -43.0,-14.7 -43.9,-14.6 -44.4,-14.3 -45.0,-14.6 -45.6,-15.0 -46.0,-14.5 -46.3,-13.8 -46.2,-13.0 -46.4,-12.3 -46.1,-11.6 -46.6,-11.3 -46.2,-10.7 -45.7,-10.3 -45.3,-10.8 -44.5,-10.6 -43.9,-10.3 -43.8,-9.5 -42.9,-9.5 -42.2,-9.3 -41.6,-9.0 -40.8,-9.1 -39.9,-9.0 -39.4,-8.6 -39.3,-8.6|-37.3,-4.8 -37.8,-5.2 -38.1,-5.8 -38.6,-6.3 -38.8,-7.0 -38.9,-7.8 -39.5,-7.5 -40.3,-7.3 -40.6,-6.7 -40.9,-6.1 -40.9,-5.2 -41.2,-4.6 -41.3,-3.7 -41.1,-2.9 -40.3,-2.8 -39.6,-3.1 -39.0,-3.4 -38.4,-3.8 -38.0,-4.2 -37.5,-4.6 -37.3,-4.8|-47.5,-15.5 -47.9,-16.1 -47.5,-15.5|-40.5,-17.9 -39.9,-18.2 -39.7,-19.1 -40.0,-19.8 -40.3,-20.4 -40.7,-20.8 -41.3,-21.2 -41.7,-20.8 -41.5,-20.2 -41.1,-19.6 -41.2,-18.9 -41.0,-18.2 -40.5,-17.9|-50.2,-12.4 -49.8,-13.0 -49.1,-12.8 -48.6,-13.2 -47.8,-13.3 -47.1,-13.2 -46.4,-12.8 -46.2,-13.5 -46.0,-14.2 -46.3,-14.9 -46.9,-15.2 -47.1,-16.0 -47.5,-15.5 -48.2,-15.7 -47.7,-16.1 -47.3,-16.6 -47.5,-17.3 -47.3,-18.0 -47.8,-18.4 -48.6,-18.3 -49.3,-18.6 -50.2,-18.7 -50.6,-19.1 -51.5,-19.1 -52.2,-18.9 -52.9,-18.6 -53.1,-17.9 -53.1,-17.1 -52.7,-16.6 -52.3,-16.0 -51.8,-15.6 -51.5,-15.0 -51.0,-14.6 -50.9,-13.8 -50.6,-13.2 -50.3,-12.5 -50.2,-12.4|-45.8,-1.0 -45.3,-1.4 -44.7,-1.7 -44.4,-2.3 -43.5,-2.4 -42.8,-2.6 -42.0,-2.7 -42.2,-3.4 -42.7,-3.9 -42.9,-4.6 -43.0,-5.5 -42.9,-6.3 -43.3,-6.8 -44.1,-6.9 -44.6,-7.3 -45.2,-7.6 -45.6,-8.1 -45.9,-8.7 -45.8,-9.6 -46.1,-10.2 -46.6,-9.7 -46.9,-9.1 -46.8,-8.4 -47.2,-7.9 -47.5,-7.3 -47.4,-6.4 -47.5,-5.6 -48.1,-5.3 -47.8,-4.6 -47.4,-4.2 -47.0,-3.6 -46.7,-3.0 -46.4,-2.4 -46.2,-1.7 -45.9,-1.1 -45.8,-1.0|-44.2,-14.2 -43.8,-14.7 -42.9,-14.8 -42.3,-15.1 -41.5,-15.4 -40.8,-15.7 -40.2,-15.9 -40.3,-16.7 -40.6,-17.3 -40.2,-17.8 -40.8,-18.2 -41.0,-18.8 -41.1,-19.6 -41.5,-20.2 -41.9,-20.7 -42.2,-21.3 -42.6,-21.8 -43.3,-22.0 -44.1,-22.2 -44.8,-22.4 -45.4,-22.7 -46.1,-22.9 -46.5,-22.5 -46.5,-21.6 -47.1,-21.2 -47.2,-20.5 -47.7,-20.0 -48.5,-20.1 -49.2,-20.3 -49.7,-19.9 -50.5,-19.8 -50.4,-18.9 -49.8,-18.6 -49.1,-18.4 -48.3,-18.3 -47.5,-18.2 -47.4,-17.3 -47.4,-16.5 -47.1,-15.9 -46.9,-15.2 -46.4,-14.8 -45.9,-15.2 -45.3,-14.8 -44.7,-14.5 -44.2,-14.2|-56.1,-17.2 -55.5,-17.5 -54.6,-17.5 -53.8,-17.4 -53.6,-18.0 -53.0,-18.3 -52.4,-18.7 -51.9,-19.0 -51.2,-19.3 -51.0,-20.0 -51.4,-20.5 -51.8,-21.0 -52.1,-21.7 -52.5,-22.2 -53.0,-22.5 -53.6,-22.9 -53.9,-23.4 -54.2,-24.1 -55.1,-24.0 -55.5,-23.5 -55.6,-22.7 -56.1,-22.3 -57.0,-22.2 -57.8,-22.1 -57.9,-21.3 -58.0,-20.5 -58.0,-19.6 -57.7,-18.9 -57.5,-18.2 -57.8,-17.6 -57.0,-17.6 -56.3,-17.3 -56.1,-17.2|-57.6,-8.7 -57.1,-9.1 -56.3,-9.4 -55.2,-9.5 -54.3,-9.6 -53.5,-9.6 -52.4,-9.7 -51.5,-9.8 -50.3,-9.8 -50.5,-10.5 -50.7,-11.3 -50.7,-12.2 -50.5,-13.0 -50.8,-13.6 -51.0,-14.4 -51.2,-15.0 -51.7,-15.5 -52.2,-15.9 -52.7,-16.3 -53.0,-16.9 -53.2,-17.6 -53.7,-18.0 -54.2,-17.6 -55.1,-17.7 -55.7,-17.3 -56.6,-17.3 -57.1,-17.8 -57.9,-17.4 -58.4,-17.1 -58.3,-16.3 -59.5,-16.3 -60.2,-15.9 -60.6,-15.1 -60.4,-14.4 -60.7,-13.7 -60.3,-13.2 -60.0,-12.5 -60.1,-11.7 -60.3,-11.1 -61.4,-11.0 -61.6,-10.2 -61.6,-9.4 -61.2,-8.8 -60.1,-8.8 -59.1,-8.8 -58.4,-8.6 -58.3,-7.8 -57.7,-8.1 -57.6,-8.7|-55.0,2.6 -54.8,1.9 -54.1,1.6 -53.5,1.3 -53.2,0.7 -53.0,0.0 -52.6,-0.6 -52.3,-1.1 -51.7,-0.8 -51.3,-0.3 -50.8,0.1 -50.3,0.7 -49.8,0.3 -49.2,-0.1 -48.5,-0.2 -48.0,-0.7 -47.2,-0.7 -46.4,-0.9 -46.1,-1.5 -46.3,-2.2 -46.6,-2.9 -46.9,-3.4 -47.3,-4.0 -47.6,-4.6 -48.2,-4.9 -48.8,-5.3 -48.1,-5.6 -48.4,-6.3 -48.8,-6.8 -49.2,-7.3 -49.2,-8.2 -49.6,-8.8 -50.0,-9.3 -50.7,-9.8 -52.3,-9.7 -53.1,-9.6 -54.1,-9.6 -55.0,-9.5 -56.2,-9.4 -56.9,-9.2 -57.4,-8.8 -57.7,-8.2 -58.0,-7.5 -58.3,-7.0 -58.0,-6.0 -57.7,-5.3 -57.4,-4.5 -57.0,-3.8 -56.6,-3.0 -56.4,-2.3 -57.0,-1.9 -57.5,-1.6 -58.0,-1.1 -58.6,-0.8 -58.9,-0.2 -58.9,0.9 -58.5,1.4 -57.9,1.7 -57.2,2.0 -56.3,1.9 -56.0,2.5 -55.1,2.6 -55.0,2.6|-37.2,-6.0 -37.5,-6.7 -36.7,-6.9 -36.4,-6.3 -35.6,-6.5 -34.9,-6.7 -34.8,-7.5 -35.5,-7.6 -36.3,-7.8 -36.8,-8.2 -37.2,-7.7 -38.0,-7.8 -38.7,-7.6 -38.6,-6.8 -38.1,-6.5 -37.5,-6.1 -37.2,-6.0|-40.2,-7.4 -39.5,-7.6 -38.7,-7.7 -37.8,-7.6 -37.2,-7.3 -37.1,-8.1 -36.4,-7.9 -35.7,-7.7 -35.1,-7.4 -34.9,-8.0 -35.1,-8.7 -35.8,-8.9 -36.4,-9.2 -37.3,-9.2 -38.1,-9.2 -38.7,-8.9 -39.3,-8.6 -39.9,-8.9 -40.3,-9.4 -40.9,-9.0 -40.7,-8.2 -40.6,-7.4 -40.2,-7.4|-41.8,-2.8 -41.4,-3.4 -41.2,-4.0 -41.2,-4.9 -40.9,-5.5 -40.8,-6.3 -40.4,-6.8 -40.7,-7.5 -40.8,-8.3 -41.3,-8.7 -41.8,-9.1 -42.4,-9.4 -43.3,-9.4 -43.7,-9.9 -44.0,-10.5 -44.7,-10.8 -45.4,-10.6 -46.0,-10.2 -45.8,-9.5 -45.8,-8.6 -45.5,-7.9 -45.0,-7.5 -44.5,-7.2 -44.0,-6.7 -43.1,-6.7 -43.1,-5.8 -42.8,-5.2 -42.9,-4.4 -42.7,-3.7 -42.1,-3.4 -41.8,-2.8|-41.8,-20.8 -41.3,-21.2 -41.0,-21.8 -41.5,-22.2 -42.0,-22.7 -42.6,-22.9 -43.5,-23.0 -44.4,-23.0 -44.7,-22.5 -44.1,-22.2 -43.4,-22.0 -42.6,-21.9 -42.2,-21.3 -41.9,-20.8 -41.8,-20.8|-35.0,-6.5 -35.9,-6.5 -36.6,-6.7 -37.5,-6.7 -37.2,-6.1 -37.8,-6.4 -38.1,-5.7 -37.7,-5.1 -37.0,-4.9 -36.2,-5.1 -35.5,-5.2 -35.2,-5.9 -35.0,-6.5|-62.9,-8.0 -62.4,-8.4 -61.9,-8.9 -61.6,-9.4 -61.5,-10.3 -61.0,-11.0 -60.2,-11.1 -60.1,-11.9 -60.1,-12.8 -60.4,-13.4 -61.2,-13.5 -62.0,-13.4 -62.5,-13.1 -63.1,-12.7 -63.7,-12.4 -64.5,-12.3 -65.0,-11.9 -65.3,-11.3 -65.4,-10.5 -65.6,-9.8 -66.5,-9.9 -66.0,-9.4 -65.2,-9.3 -64.6,-9.0 -64.0,-8.7 -63.7,-8.1 -62.9,-8.0|-58.9,1.2 -58.9,0.3 -60.0,0.3 -60.3,-0.3 -60.6,-0.9 -61.2,-0.5 -61.5,-1.1 -62.3,-0.9 -62.3,0.0 -62.5,0.7 -62.7,1.5 -63.0,2.0 -63.6,2.4 -64.1,2.9 -64.2,3.6 -64.7,4.1 -64.0,3.9 -63.1,3.8 -62.5,4.1 -61.7,4.3 -61.1,4.5 -60.6,4.9 -60.1,4.5 -59.6,4.1 -59.8,3.4 -59.9,2.6 -59.7,1.9 -59.3,1.4 -58.9,1.2|-49.7,-29.3 -50.1,-29.9 -50.4,-30.6 -50.8,-31.1 -51.3,-31.6 -51.8,-31.9 -51.3,-31.5 -51.0,-30.9 -50.6,-30.3 -51.2,-30.0 -51.4,-30.8 -51.8,-31.3 -52.2,-31.8 -52.4,-32.6 -52.7,-33.3 -53.3,-33.7 -53.2,-32.9 -52.6,-32.5 -53.5,-32.5 -53.9,-32.0 -54.5,-31.7 -55.0,-31.3 -55.5,-30.9 -56.2,-30.7 -56.6,-30.2 -57.5,-30.3 -57.1,-29.7 -56.7,-29.3 -56.2,-28.8 -55.7,-28.3 -55.2,-27.9 -54.6,-27.5 -54.0,-27.2 -53.2,-27.1 -52.4,-27.3 -51.7,-27.5 -51.1,-27.8 -50.7,-28.3 -49.9,-28.5 -50.1,-29.2 -49.7,-29.3|-48.6,-26.0 -48.6,-26.9 -48.4,-27.6 -48.7,-28.3 -49.2,-28.8 -49.7,-29.3 -49.8,-28.5 -50.6,-28.4 -51.1,-27.9 -51.6,-27.5 -52.3,-27.3 -53.0,-27.1 -53.8,-27.0 -53.6,-26.3 -52.8,-26.3 -52.1,-26.5 -51.3,-26.7 -50.8,-26.2 -50.1,-26.0 -49.2,-26.0 -48.6,-26.0|-36.4,-10.5 -37.0,-10.9 -37.3,-11.4 -38.0,-11.2 -37.9,-10.4 -38.0,-9.7 -37.3,-9.9 -36.8,-10.2 -36.4,-10.5|-48.4,-5.2 -47.7,-5.4 -47.4,-6.1 -47.5,-6.9 -47.4,-7.7 -46.7,-7.9 -46.9,-8.6 -46.8,-9.4 -46.5,-10.0 -45.8,-10.3 -46.2,-10.7 -46.6,-11.3 -46.3,-11.9 -46.3,-12.8 -46.9,-13.1 -47.7,-13.2 -48.5,-13.3 -49.0,-12.9 -49.8,-13.0 -50.2,-12.5 -50.7,-12.1 -50.7,-11.2 -50.5,-10.4 -50.2,-9.8 -49.9,-9.1 -49.5,-8.6 -49.2,-8.0 -49.2,-7.1 -48.7,-6.7 -48.3,-6.1 -48.5,-5.4 -48.4,-5.2|-48.1,-25.3 -48.5,-25.8 -49.2,-26.0 -50.1,-26.0 -50.8,-26.2 -51.3,-26.7 -52.1,-26.5 -52.8,-26.3 -53.6,-26.3 -53.9,-25.6 -54.6,-25.5 -54.4,-24.8 -54.2,-24.0 -53.9,-23.4 -53.5,-22.9 -52.9,-22.6 -52.1,-22.5 -51.3,-22.7 -50.7,-23.0 -49.9,-23.0 -49.6,-23.6 -49.3,-24.2 -48.8,-24.7 -48.3,-25.0 -48.1,-25.3|-50.5,-19.8 -49.7,-19.9 -49.2,-20.3 -48.5,-20.1 -47.7,-20.0 -47.3,-20.5 -47.1,-21.2 -46.5,-21.5 -46.7,-22.2 -46.3,-22.8 -45.6,-22.6 -44.9,-22.4 -44.2,-22.6 -44.8,-23.0 -45.1,-23.5 -45.8,-23.8 -46.4,-24.0 -47.0,-24.3 -47.5,-24.7 -47.9,-25.2 -48.6,-24.9 -49.3,-24.7 -49.5,-24.0 -49.6,-23.3 -50.2,-23.0 -51.0,-22.8 -51.7,-22.6 -52.6,-22.6 -52.3,-21.9 -51.9,-21.4 -51.6,-20.8 -51.2,-20.3 -50.7,-19.9 -50.5,-19.8";
       CONT = [[12.4, -71.7], [11, -74.2], [10.4, -75.5], [8.5, -76.9], [7.2, -77.8], [4, -77.3], [1.5, -78.9], [-2, -80.9], [-4.5, -81.3], [-6, -81], [-8, -79.2], [-12, -77.2], [-14, -76.2], [-17, -72.2], [-18.4, -70.3], [-23, -70.4], [-27, -70.9], [-33, -71.7], [-37, -73.4], [-41.5, -73.8], [-46, -75.5], [-50, -75.5], [-53, -74.5], [-55.5, -68], [-54.5, -65], [-52, -68.4], [-50, -69], [-47, -65.8], [-45, -65.6], [-42, -63.7], [-40.7, -62.2], [-39, -62], [-38.8, -58], [-36.5, -56.5], [-35, -57], [-34.9, -54.9], [-33.7, -53.4], [-30, -50.5], [-28.5, -48.7], [-25.5, -48.5], [-23.8, -45.5], [-23, -43], [-21, -40.9], [-18, -39.6], [-14, -39], [-12.9, -38.4], [-10.5, -36.5], [-8, -34.8], [-5.2, -35.3], [-3.5, -38.5], [-2.8, -41], [-2.5, -44], [-0.7, -47.5], [0, -50], [2, -50.5], [4.5, -51.6], [5.7, -53.5], [6.8, -57.2], [8.5, -60], [10.6, -61.5], [10.6, -63.5], [10.7, -66], [11, -68.5]];
       CID = [["S\xE3o Paulo", -23.55, -46.63, 1], ["Rio de Janeiro", -22.91, -43.17, 1], ["Belo Horizonte", -19.92, -43.94, 1], ["Bras\xEDlia", -15.79, -47.88, 1], ["Salvador", -12.97, -38.51, 1], ["Fortaleza", -3.73, -38.52, 1], ["Recife", -8.05, -34.88, 1], ["Manaus", -3.12, -60.02, 1], ["Bel\xE9m", -1.46, -48.5, 1], ["Porto Alegre", -30.03, -51.23, 1], ["Curitiba", -25.43, -49.27, 1], ["Goi\xE2nia", -16.68, -49.25, 1], ["Cuiab\xE1", -15.6, -56.1, 1], ["Campo Grande", -20.46, -54.62, 1], ["Porto Velho", -8.76, -63.9, 2], ["Rio Branco", -9.97, -67.81, 2], ["Macap\xE1", 0.03, -51.07, 2], ["Boa Vista", 2.82, -60.67, 2], ["Palmas", -10.18, -48.33, 2], ["S\xE3o Lu\xEDs", -2.53, -44.3, 2], ["Teresina", -5.09, -42.8, 2], ["Natal", -5.79, -35.21, 2], ["Jo\xE3o Pessoa", -7.12, -34.86, 2], ["Macei\xF3", -9.67, -35.74, 2], ["Aracaju", -10.91, -37.07, 2], ["Vit\xF3ria", -20.32, -40.34, 2], ["Florian\xF3polis", -27.6, -48.55, 2], ["Campinas", -22.9, -47.06, 3], ["Santos", -23.96, -46.33, 3], ["Ribeir\xE3o Preto", -21.18, -47.81, 3], ["Uberl\xE2ndia", -18.92, -48.28, 3], ["Londrina", -23.31, -51.16, 3], ["Joinville", -26.3, -48.85, 3], ["Feira de Santana", -12.27, -38.97, 3], ["Imperatriz", -5.52, -47.48, 3], ["Santar\xE9m", -2.44, -54.7, 3], ["Cascavel", -24.96, -53.46, 3], ["Juiz de Fora", -21.76, -43.35, 3], ["Petrolina", -9.39, -40.5, 3]];
       ROD = [
@@ -1244,46 +1244,80 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
 
   // backend.js
   var COLS = ["prestadores", "ordens", "bases", "acionamentos", "pecas_envio", "log", "ocorrencias", "notificacoes"];
-  var S = { prestadores: [], ordens: [], bases: [], acionamentos: [], pecas_envio: [], log: [], ocorrencias: [], notificacoes: [], frota: [], config: {} };
+  var estado = { prestadores: [], ordens: [], bases: [], acionamentos: [], pecas_envio: [], log: [], ocorrencias: [], notificacoes: [], frota: [], config: {} };
   var DEF_CONFIG = { escalonamento_gerencia_h: 4, escalonamento_supervisor_h: 2, mostrar_bases: true, mostrar_oficinas: true, raio_km: 100, resumo_ativo: false, resumo_emails: "", resumo_horario: "07:30", sascar_intervalo_min: 5 };
   var DB = null;
   var ROLE = "operador";
-  var CUR = { email: "", nome: "", role: "operador" };
+  var usuarioAtual = { email: "", nome: "", role: "operador" };
   function setUser(u) {
-    CUR = u || CUR;
-    ROLE = CUR.role || "operador";
+    usuarioAtual = u || usuarioAtual;
+    ROLE = usuarioAtual.role || "operador";
   }
-  var QUEM = () => CUR.email || CUR.nome || "Usu\xE1rio";
-  var getState = () => S;
+  var QUEM = () => usuarioAtual.email || usuarioAtual.nome || "Usu\xE1rio";
+  var getState = () => estado;
   var callRoute = (path) => route("GET", path, {}, null).b;
   var TZ = "America/Sao_Paulo";
   var pad = (n, l = 2) => String(n).padStart(l, "0");
-  function brt(d = /* @__PURE__ */ new Date()) {
+  function horaBrasilia(d = /* @__PURE__ */ new Date()) {
     const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: TZ, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" }).formatToParts(d).map((x) => [x.type, x.value]));
     return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}.${pad(d.getMilliseconds(), 3)}000-03:00`;
   }
-  var now = () => brt();
-  var today = (d = /* @__PURE__ */ new Date()) => brt(d).slice(0, 10);
+  var now = () => horaBrasilia();
+  var today = (d = /* @__PURE__ */ new Date()) => horaBrasilia(d).slice(0, 10);
   function parseDt(s) {
     if (!s) return null;
     const str = /[zZ]$|[+-]\d\d:?\d\d$/.test(String(s)) ? String(s) : String(s) + "-03:00";
     const d = new Date(str);
     return isNaN(d) ? null : d;
   }
-  var r1 = (x) => Math.round(x * 10) / 10;
-  var r2 = (x) => Math.round(x * 100) / 100;
+  var arred1 = (x) => Math.round(x * 10) / 10;
+  var arred2 = (x) => Math.round(x * 100) / 100;
+  function agrupar(lista, chave, padrao, novo, acumular) {
+    const grupos = {};
+    lista.forEach((item) => {
+      const k = chave(item) || padrao;
+      acumular(grupos[k] = grupos[k] || novo(k, item), item);
+    });
+    return grupos;
+  }
+  function somarPor(lista, chave, peso = () => 1) {
+    const totais = {};
+    lista.forEach((item) => {
+      const k = chave(item);
+      totais[k] = (totais[k] || 0) + peso(item);
+    });
+    return totais;
+  }
+  var valorDe = (o) => Number(o.valor) || 0;
   var uid = () => crypto.randomUUID ? crypto.randomUUID() : "id" + Math.random().toString(16).slice(2) + Date.now();
   var FECHAMENTO = /* @__PURE__ */ new Set(["Liberado", "Conclu\xEDdo", "Rebocado", "Ve\xEDculo liberado", "O.S. fechada"]);
   var STATUS_LABELS = { "Aguardando": "O.S. criada \xB7 aguardando", "Prestador localizado": "Prestador localizado", "Prestador a caminho": "Prestador a caminho", "Prestador no local": "Prestador no local", "Servi\xE7o em execu\xE7\xE3o": "Servi\xE7o em execu\xE7\xE3o", "Em atendimento": "Servi\xE7o em execu\xE7\xE3o", "Ve\xEDculo liberado": "Ve\xEDculo liberado", "Liberado": "Ve\xEDculo liberado", "O.S. fechada": "O.S. fechada", "Conclu\xEDdo": "O.S. fechada", "Rebocado": "Ve\xEDculo rebocado", "Cancelada": "O.S. cancelada" };
   var aberta = (o) => !!o.abertura && !o.fechamento && !o.cancelado;
-  var pc = (v) => String(v || "").trim().toLowerCase().replace(/(^|[^a-zà-ÿ])([a-zà-ÿ])/g, (m, a, b) => a + b.toUpperCase());
+  var capitalizar = (v) => String(v || "").trim().toLowerCase().replace(/(^|[^a-zà-ÿ])([a-zà-ÿ])/g, (m, a, b) => a + b.toUpperCase());
   var normPlaca = (v) => String(v || "").trim().toUpperCase();
+  var TODAS = ["insert", "update", "delete"];
+  var ESCRITA_GERENTE = { ordens: ["insert", "update"], prestadores: TODAS, pecas_envio: TODAS, acionamentos: TODAS, ocorrencias: ["insert", "update"], notificacoes: ["insert", "update"], log: ["insert"] };
+  function podeGravar(colecao, acao) {
+    if (ROLE === "admin") return true;
+    if (ROLE === "gerente") return (ESCRITA_GERENTE[colecao] || []).includes(acao);
+    return false;
+  }
+  var SemPermissao = class extends Error {
+    constructor(msg) {
+      super(msg || "Sem permiss\xE3o para alterar. Fale com um administrador.");
+      this.status = 403;
+    }
+  };
+  function exigirGravacao(colecao, acao) {
+    if (!podeGravar(colecao, acao)) throw new SemPermissao();
+  }
   function put(col, obj) {
-    const i = S[col].findIndex((x) => x.id === obj.id);
+    const i = estado[col].findIndex((x) => x.id === obj.id);
+    exigirGravacao(col, i >= 0 ? "update" : "insert");
     if (i >= 0) {
-      if (!obj._k && S[col][i]._k) obj._k = S[col][i]._k;
-      S[col][i] = obj;
-    } else S[col].unshift(obj);
+      if (!obj._k && estado[col][i]._k) obj._k = estado[col][i]._k;
+      estado[col][i] = obj;
+    } else estado[col].unshift(obj);
     if (DB) {
       const { _k, ...clean } = obj;
       DB.collection(col).doc(_k || obj.id).set(clean).catch(() => {
@@ -1292,19 +1326,20 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
     return obj;
   }
   function del(col, id) {
-    const x = S[col].find((i) => i.id === id);
-    S[col] = S[col].filter((i) => i.id !== id);
+    exigirGravacao(col, "delete");
+    const x = estado[col].find((i) => i.id === id);
+    estado[col] = estado[col].filter((i) => i.id !== id);
     if (DB) DB.collection(col).doc(x && x._k || id).delete().catch(() => {
     });
   }
   function saveConfig() {
-    if (DB) DB.collection("config").doc("main").set(S.config).catch(() => {
+    if (DB) DB.collection("config").doc("main").set(estado.config).catch(() => {
     });
   }
   function addLog(evento, os, detalhe, quem = "Sistema") {
     put("log", { id: uid(), evento, os, detalhe, quem, created_at: now() });
   }
-  var byId = (id) => S.ordens.find((o) => o.id === id);
+  var byId = (id) => estado.ordens.find((o) => o.id === id);
   var readyRes;
   var ready = new Promise((r) => {
     readyRes = r;
@@ -1315,99 +1350,68 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
       readyRes();
       return;
     }
-    let pending = COLS.length + 3;
-    const done = () => {
-      if (--pending <= 0) readyRes();
+    let faltam = COLS.length + 3;
+    const umaPronta = () => {
+      if (--faltam <= 0) readyRes();
     };
     setTimeout(readyRes, 8e3);
-    COLS.forEach((c) => {
-      let first = true;
-      db.collection(c).onSnapshot((s) => {
-        S[c] = s.docs.map((d) => ({ id: d.id, ...d.data(), _k: d.id }));
-        if (first) {
-          first = false;
-          done();
+    const ouvir = (colecao, aoMudar, aoPrimeiro = () => {
+    }) => {
+      let primeiro = true;
+      const marcar = () => {
+        if (primeiro) {
+          primeiro = false;
+          aoPrimeiro();
         }
-      }, () => {
-        if (first) {
-          first = false;
-          done();
-        }
-      });
+      };
+      db.collection(colecao).onSnapshot((snap) => {
+        aoMudar(snap);
+        marcar();
+      }, marcar);
+    };
+    const docMain = (snap) => snap.docs.find((x) => x.id === "main");
+    COLS.forEach((c) => ouvir(c, (snap) => {
+      estado[c] = snap.docs.map((d) => ({ id: d.id, ...d.data(), _k: d.id }));
+    }, umaPronta));
+    ouvir("frota_placas", (snap) => {
+      estado.frota = snap.docs.flatMap((d) => d.data().items || []);
+    }, umaPronta);
+    ouvir("config", (snap) => {
+      const d = docMain(snap);
+      estado.config = d ? d.data() : {};
+    }, umaPronta);
+    ouvir("sascar_pos", (snap) => {
+      const d = docMain(snap);
+      estado.sascar = d ? d.data() : { data: {} };
     });
-    let f1 = true;
-    db.collection("frota_placas").onSnapshot((s) => {
-      S.frota = s.docs.flatMap((d) => d.data().items || []);
-      if (f1) {
-        f1 = false;
-        done();
-      }
-    }, () => {
-      if (f1) {
-        f1 = false;
-        done();
-      }
-    });
-    let f2 = true;
-    db.collection("config").onSnapshot((s) => {
-      const d = s.docs.find((x) => x.id === "main");
-      S.config = d ? d.data() : {};
-      if (f2) {
-        f2 = false;
-        done();
-      }
-    }, () => {
-      if (f2) {
-        f2 = false;
-        done();
-      }
-    });
-    db.collection("sascar_pos").onSnapshot((sn) => {
-      const d = sn.docs.find((x) => x.id === "main");
-      S.sascar = d ? d.data() : { data: {} };
-    }, () => {
-    });
-    done();
+    umaPronta();
   }
-  var TIPOS0 = () => ({ mecanico: 0, eletrico: 0, eletronica: 0, eletrica_mecanica: 0, borracharia: 0, guincho: 0, pneus: 0, freio: 0, combustivel: 0, outros: 0 });
+  var contadorPorTipo = () => ({ mecanico: 0, eletrico: 0, eletronica: 0, eletrica_mecanica: 0, borracharia: 0, guincho: 0, pneus: 0, freio: 0, combustivel: 0, outros: 0 });
   function stats() {
-    const P2 = S.prestadores, A = S.acionamentos, O = S.ordens;
-    const tp = TIPOS0(), ta = TIPOS0();
+    const P2 = estado.prestadores, A = estado.acionamentos, O = estado.ordens;
+    const tiposPrestador = contadorPorTipo(), tiposOrdem = contadorPorTipo();
     P2.forEach((p) => {
       const t = p.tipo_servico || "mecanico";
-      if (t in tp) tp[t]++;
+      if (t in tiposPrestador) tiposPrestador[t]++;
     });
     O.forEach((o) => {
       const t = o.tipo_servico || "mecanico";
-      if (t in ta) ta[t]++;
+      if (t in tiposOrdem) tiposOrdem[t]++;
     });
-    const pcnt = {};
-    O.forEach((o) => {
-      const n = o.prestador_nome || "Sem prestador";
-      const id = n !== "Sem prestador" ? o.prestador_id || "" : "sem-prestador";
-      (pcnt[n] = pcnt[n] || { id, nome: n, count: 0 }).count++;
+    const SEM_PRESTADOR = "Sem prestador", nomePrestador = (o) => o.prestador_nome || SEM_PRESTADOR;
+    const ordensPorPrestador = agrupar(O, nomePrestador, SEM_PRESTADOR, (n, o) => ({ id: n !== SEM_PRESTADOR ? o.prestador_id || "" : "sem-prestador", nome: n, count: 0 }), (x) => {
+      x.count++;
     });
-    const top = Object.values(pcnt).sort((a, b) => b.count - a.count).slice(0, 10);
-    const total = O.length, val = (o) => Number(o.valor) || 0;
-    const opc = {};
-    O.forEach((o) => {
-      const k = o.operacao || "Sem opera\xE7\xE3o";
-      opc[k] = (opc[k] || 0) + 1;
+    const top = Object.values(ordensPorPrestador).sort((a, b) => b.count - a.count).slice(0, 10);
+    const total = O.length, val = valorDe;
+    const porOperacao = somarPor(O, (o) => o.operacao || "Sem opera\xE7\xE3o");
+    const porPlaca = somarPor(O, (o) => o.placa || o.veiculo || "Sem placa");
+    const placasRepetidas = Object.values(porPlaca).filter((c) => c > 1).length;
+    const porMarca = agrupar(O, (o) => o.marca, "Sem marca", () => ({ count: 0, custo: 0 }), (x, o) => {
+      x.count++;
+      x.custo += val(o);
     });
-    const pl = {};
-    O.forEach((o) => {
-      const k = o.placa || o.veiculo || "Sem placa";
-      pl[k] = (pl[k] || 0) + 1;
-    });
-    const recor = Object.values(pl).filter((c) => c > 1).length;
-    const marca = {};
-    O.forEach((o) => {
-      const m = o.marca || "Sem marca";
-      marca[m] = marca[m] || { count: 0, custo: 0 };
-      marca[m].count++;
-      marca[m].custo += val(o);
-    });
-    const custo_por_marca = Object.fromEntries(Object.entries(marca).map(([m, d]) => [m, { count: d.count, custo_medio: d.count ? r2(d.custo / d.count) : 0 }]));
+    const custo_por_marca = Object.fromEntries(Object.entries(porMarca).map(([m, d]) => [m, { count: d.count, custo_medio: d.count ? arred2(d.custo / d.count) : 0 }]));
     const slas = O.map((o) => o.sla_minutos).filter((x) => x !== null && x !== void 0);
     const fechadas = O.filter((o) => o.fechamento);
     const nowD = /* @__PURE__ */ new Date(), hoje2 = today(), ontem = today(new Date(nowD.getTime() - 864e5));
@@ -1421,31 +1425,24 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
     });
     paradas.sort((a, b) => b.minutos - a.minutos);
     const dentro = (l) => l.filter((o) => (o.sla_minutos || 999) <= 120).length;
-    const rpm = fechadas.length ? r1(dentro(fechadas) / fechadas.length * 100) : 0;
-    const segName = (o) => {
+    const rpm = fechadas.length ? arred1(dentro(fechadas) / fechadas.length * 100) : 0;
+    const segmentoDe = (o) => {
       const s = String(o.segmento || "").trim().toLowerCase();
       return s === "privado" || s === "correios" ? s : "privado";
     };
-    const seg = {};
+    const indicadores = {};
     ["privado", "correios"].forEach((n) => {
-      const sub = O.filter((o) => segName(o) === n), fe = sub.filter((o) => o.fechamento), din = dentro(fe);
-      const m = {};
-      sub.forEach((o) => {
-        const k = o.prestador_nome || "Sem prestador";
-        m[k] = m[k] || { nome: k, count: 0, custo: 0 };
-        m[k].count++;
-        m[k].custo += val(o);
-      });
-      const vals = Object.values(m), mc = vals.length ? vals.reduce((a, b) => b.custo > a.custo ? b : a) : { nome: "", custo: 0 };
-      seg[n] = { total: sub.length, fechadas: fe.length, dentro_prazo: din, atrasadas: fe.filter((o) => (o.sla_minutos || 999) > 120).length, em_aberto: sub.filter((o) => !o.fechamento && !o.cancelado).length, rpm: fe.length ? r1(din / fe.length * 100) : 0, mais_acionadas: vals.sort((a, b) => b.count - a.count).slice(0, 5), maior_custo: { nome: mc.nome, valor: r2(mc.custo) } };
+      const sub = O.filter((o) => segmentoDe(o) === n), fe = sub.filter((o) => o.fechamento), din = dentro(fe);
+      const vals = Object.values(agrupar(sub, nomePrestador, SEM_PRESTADOR, (k) => ({ nome: k, count: 0, custo: 0 }), (x, o) => {
+        x.count++;
+        x.custo += val(o);
+      }));
+      const mc = vals.length ? vals.reduce((a, b) => b.custo > a.custo ? b : a) : { nome: "", custo: 0 };
+      indicadores[n] = { total: sub.length, fechadas: fe.length, dentro_prazo: din, atrasadas: fe.filter((o) => (o.sla_minutos || 999) > 120).length, em_aberto: sub.filter((o) => !o.fechamento && !o.cancelado).length, rpm: fe.length ? arred1(din / fe.length * 100) : 0, mais_acionadas: vals.sort((a, b) => b.count - a.count).slice(0, 5), maior_custo: { nome: mc.nome, valor: arred2(mc.custo) } };
     });
-    const cg = {};
-    O.forEach((o) => {
-      const k = o.prestador_nome || "Sem prestador";
-      cg[k] = (cg[k] || 0) + val(o);
-    });
-    const maiorG = Object.entries(cg).sort((a, b) => b[1] - a[1])[0];
-    seg.geral = { total, fechadas: fechadas.length, dentro_prazo: dentro(fechadas), atrasadas: fechadas.filter((o) => (o.sla_minutos || 999) > 120).length, em_aberto: O.filter(aberta).length, rpm, mais_acionadas: top, maior_custo: maiorG ? { nome: maiorG[0], valor: r2(maiorG[1]) } : { nome: "", valor: 0 } };
+    const custoPorPrestador = somarPor(O, nomePrestador, val);
+    const maiorG = Object.entries(custoPorPrestador).sort((a, b) => b[1] - a[1])[0];
+    indicadores.geral = { total, fechadas: fechadas.length, dentro_prazo: dentro(fechadas), atrasadas: fechadas.filter((o) => (o.sla_minutos || 999) > 120).length, em_aberto: O.filter(aberta).length, rpm, mais_acionadas: top, maior_custo: maiorG ? { nome: maiorG[0], valor: arred2(maiorG[1]) } : { nome: "", valor: 0 } };
     const pag = { a_vista: { count: 0, valor: 0 }, faturado: { count: 0, valor: 0 }, nao_informado: { count: 0, valor: 0 } };
     const AV = ["a_vista", "\xE0 vista", "a vista", "avista"];
     O.forEach((o) => {
@@ -1455,33 +1452,29 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
       pag[k].valor += val(o);
     });
     Object.values(pag).forEach((x) => {
-      x.valor = r2(x.valor);
+      x.valor = arred2(x.valor);
     });
     const dia = (o) => String(o.data || "").slice(0, 10);
     const hEnt = O.filter((o) => dia(o) === hoje2).length, oEnt = O.filter((o) => dia(o) === ontem).length;
     const hFec = O.filter((o) => o.fechamento && String(o.fechamento).slice(0, 10) === hoje2).length, oFec = O.filter((o) => o.fechamento && String(o.fechamento).slice(0, 10) === ontem).length;
-    const por_status = {};
-    O.forEach((o) => {
-      const k = o.status || "Sem status";
-      por_status[k] = (por_status[k] || 0) + 1;
-    });
-    const soma = (l, f) => r2(l.filter(f).reduce((s, o) => s + val(o), 0));
+    const por_status = somarPor(O, (o) => o.status || "Sem status");
+    const soma = (l, f) => arred2(l.filter(f).reduce((s, o) => s + val(o), 0));
     return {
       total_prestadores: P2.length,
       disponiveis_24h: P2.filter((p) => p.socorro_24h).length,
       com_faturamento: P2.filter((p) => p.fatura).length,
       total_acionamentos: A.length,
-      tipo_prestadores: tp,
-      acionamento_por_tipo: ta,
+      tipo_prestadores: tiposPrestador,
+      acionamento_por_tipo: tiposOrdem,
       top_prestadores: top,
       total_ordens: total,
       valor_total: O.reduce((s, o) => s + val(o), 0),
       veiculos_unicos: new Set(O.map((o) => o.veiculo || o.placa).filter(Boolean)).size,
       servicos_total: O.filter((o) => o.servico_realizado).length,
-      operacao_count: opc,
-      taxa_repetibilidade: total ? r1(recor / total * 100) : 0,
+      operacao_count: porOperacao,
+      taxa_repetibilidade: total ? arred1(placasRepetidas / total * 100) : 0,
       custo_por_marca,
-      sla_medio: slas.length ? r1(slas.reduce((a, b) => a + b, 0) / slas.length) : 0,
+      sla_medio: slas.length ? arred1(slas.reduce((a, b) => a + b, 0) / slas.length) : 0,
       ordens_fechadas: fechadas.length,
       socorros_hoje: O.filter((o) => String(o.created_at || "").startsWith(hoje2) || o.data === hoje2).length,
       em_aberto: O.filter(aberta).length,
@@ -1489,7 +1482,7 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
       liberados: O.filter((o) => ["Liberado", "Ve\xEDculo liberado"].includes(o.status)).length,
       rebocados: O.filter((o) => ["Rebocado", "Reboque", "Ve\xEDculo rebocado"].includes(o.status)).length,
       rpm,
-      indicadores_segmento: seg,
+      indicadores_segmento: indicadores,
       pagamento: pag,
       paradas,
       resumo: { por_status, hoje: { entraram: hEnt, fecharam: hFec, avista_valor: soma(O, (o) => AV.includes(o.forma_pagamento || "") && dia(o) === hoje2), faturado_valor: soma(O, (o) => (o.forma_pagamento || "") === "faturado" && dia(o) === hoje2) }, ontem: { entraram: oEnt, fecharam: oFec }, tendencia_entraram: hEnt - oEnt, tendencia_fecharam: hFec - oFec }
@@ -1497,27 +1490,24 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
   }
   function alerts() {
     const nowD = /* @__PURE__ */ new Date(), out = [];
-    S.ordens.filter(aberta).forEach((o) => {
+    estado.ordens.filter(aberta).forEach((o) => {
       const a = parseDt(o.abertura);
       if (!a) return;
-      const min = r1((nowD - a) / 6e4);
-      if (min > 60) {
-        out.push({ ...o, minutos_aberto: min });
-        if (!S.log.some((e) => e.evento === "SLA_ALERTA_60MIN" && e.os === o.os)) addLog("SLA_ALERTA_60MIN", o.os, `O.S. aberta h\xE1 ${Math.floor(min)} min`, "Sistema");
-      }
+      const min = arred1((nowD - a) / 6e4);
+      if (min > 60) out.push({ ...o, minutos_aberto: min });
     });
     return { data: out, total: out.length };
   }
-  var nextOs = () => String(S.ordens.reduce((m, o) => Math.max(m, parseInt(o.os, 10) || 0), 0) + 1).padStart(6, "0");
+  var nextOs = () => String(estado.ordens.reduce((m, o) => Math.max(m, parseInt(o.os, 10) || 0), 0) + 1).padStart(6, "0");
   function route(method, path, q, body) {
     const seg = path.split("/").filter(Boolean), [a, b, c, d] = seg;
     const ok = (data) => ({ s: 200, b: data }), fail = (s, detail) => ({ s, b: { detail } });
     if (a === "prestadores") {
       if (!b) {
-        if (method === "GET") return ok({ data: S.prestadores, total: S.prestadores.length });
+        if (method === "GET") return ok({ data: estado.prestadores, total: estado.prestadores.length });
         if (method === "POST") return ok({ success: true, data: put("prestadores", { ...body, id: uid(), created_at: now() }) });
       } else {
-        const p = S.prestadores.find((x) => x.id === b);
+        const p = estado.prestadores.find((x) => x.id === b);
         if (!p) return fail(404, "Prestador n\xE3o encontrado");
         if (method === "PUT") return ok({ success: true, data: put("prestadores", { ...p, ...body, id: b }) });
         if (method === "DELETE") {
@@ -1528,9 +1518,9 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
       }
     }
     if (a === "acionamentos") {
-      if (method === "GET") return ok({ data: S.acionamentos, total: S.acionamentos.length });
+      if (method === "GET") return ok({ data: estado.acionamentos, total: estado.acionamentos.length });
       if (method === "POST") {
-        const p = S.prestadores.find((x) => x.id === body.prestador_id);
+        const p = estado.prestadores.find((x) => x.id === body.prestador_id);
         return ok({ success: true, data: put("acionamentos", { ...body, prestador_nome: p ? p.nome : body.prestador_nome || "", id: uid() }) });
       }
       if (method === "DELETE") {
@@ -1541,25 +1531,25 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
     if (a === "ordens") {
       if (!b) {
         if (method === "GET") {
-          const pm = Object.fromEntries(S.prestadores.map((p) => [p.id, p.nome]));
-          const items = S.ordens.map((o) => !o.prestador_nome && o.prestador_id ? { ...o, prestador_nome: pm[o.prestador_id] || "" } : o).sort((x, y) => String(y.created_at || "").localeCompare(String(x.created_at || "")));
+          const pm = Object.fromEntries(estado.prestadores.map((p) => [p.id, p.nome]));
+          const items = estado.ordens.map((o) => !o.prestador_nome && o.prestador_id ? { ...o, prestador_nome: pm[o.prestador_id] || "" } : o).sort((x, y) => String(y.created_at || "").localeCompare(String(x.created_at || "")));
           return ok({ data: items, total: items.length });
         }
         if (method === "POST") {
           const o = { ...body, id: uid(), created_at: now(), abertura: now() };
           o.os = o.os && String(o.os).trim() ? String(o.os).trim().replace(/^0+/, "") || "0" : nextOs();
           ["motorista", "operador", "modelo", "marca", "rodovia", "localizacao"].forEach((k) => {
-            o[k] = pc(o[k]);
+            o[k] = capitalizar(o[k]);
           });
           o.placa = normPlaca(o.placa);
           o.data = o.data || today();
           if (!o.veiculo) o.veiculo = [o.marca, o.modelo, o.placa].filter(Boolean).join(" ").trim();
           if (o.prestador_id) {
-            const p = S.prestadores.find((x) => x.id === o.prestador_id);
+            const p = estado.prestadores.find((x) => x.id === o.prestador_id);
             o.prestador_nome = p ? p.nome : "";
           }
           o.criado_por = QUEM();
-          o.criado_login = CUR.email;
+          o.criado_login = usuarioAtual.email;
           o.criado_perfil = ROLE;
           o.historico = [{ hora: now(), etapa: "OS_CRIADA", quem: o.criado_por }];
           put("ordens", o);
@@ -1567,15 +1557,17 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
           return ok({ success: true, data: o });
         }
       } else if (b === "cancelamentos" && c === "pendentes") {
-        const l = S.ordens.filter((o) => o.cancelamento_solicitado && !o.cancelado);
+        const l = estado.ordens.filter((o) => o.cancelamento_solicitado && !o.cancelado);
         return ok({ data: l, total: l.length });
       } else {
         const it = byId(b);
         if (!it) return fail(404, "Ordem n\xE3o encontrada");
         if (!c && method === "PUT") {
           const upd = body || {}, o = { ...it, ...upd };
+          const cancelada = (x) => !!x.cancelado || x.status === "Cancelada";
+          if (ROLE !== "admin" && cancelada(o) !== cancelada(it)) return fail(403, 'S\xF3 um administrador cancela O.S. Use "Excluir" para solicitar o cancelamento.');
           ["motorista", "operador", "modelo", "marca", "rodovia", "localizacao"].forEach((k) => {
-            if (k in upd && upd[k]) o[k] = pc(upd[k]);
+            if (k in upd && upd[k]) o[k] = capitalizar(upd[k]);
           });
           if (upd.placa) o.placa = normPlaca(upd.placa);
           if ("os" in upd) o.os = String(o.os || "").trim().replace(/^0+/, "") || "0";
@@ -1583,7 +1575,7 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
             o.fechamento = now();
             if (o.abertura) {
               const x = parseDt(o.abertura), f = parseDt(o.fechamento);
-              if (x && f) o.sla_minutos = r1((f - x) / 6e4);
+              if (x && f) o.sla_minutos = arred1((f - x) / 6e4);
             }
           }
           if ("status" in upd) {
@@ -1603,7 +1595,7 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
           const o = { ...it, resultado: body.resultado, servico_realizado: body.servico_realizado || "" };
           if (body.prestador_id) {
             o.prestador_id = body.prestador_id;
-            const p = S.prestadores.find((x) => x.id === body.prestador_id);
+            const p = estado.prestadores.find((x) => x.id === body.prestador_id);
             o.prestador_nome = p ? p.nome : "";
           }
           if (body.valor !== null && body.valor !== void 0) o.valor = body.valor;
@@ -1616,31 +1608,41 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
           o.ultima_atualizacao = now();
           if (o.abertura) {
             const x = parseDt(o.abertura), f = parseDt(o.fechamento);
-            if (x && f) o.sla_minutos = r1((f - x) / 6e4);
+            if (x && f) o.sla_minutos = arred1((f - x) / 6e4);
           }
           put("ordens", o);
           addLog("OS_FECHADA", o.os, `Resultado: ${body.resultado}`, QUEM());
           return ok({ success: true, data: o });
         }
         if (c === "cancelar" && d === "aprovar") {
+          if (ROLE !== "admin") return fail(403, "S\xF3 um administrador aprova cancelamentos.");
+          if (it.cancelado) return fail(400, "Esta O.S. j\xE1 est\xE1 cancelada.");
           if (!it.cancelamento_solicitado) return fail(400, "Nenhum cancelamento pendente para esta O.S.");
-          const o = { ...it, cancelado: true, motivo_cancelamento: it.cancelamento_motivo || "", status: "Cancelada", cancelamento_aprovado_por: QUEM(), cancelamento_solicitado: false, historico: [...it.historico || [], { hora: now(), etapa: "CANCELADA", quem: QUEM() }] };
+          const ag = now();
+          const o = { ...it, cancelado: true, motivo_cancelamento: it.cancelamento_motivo || "", status: "Cancelada", fechamento: it.fechamento || ag, cancelamento_aprovado_por: QUEM(), cancelamento_aprovado_em: ag, cancelamento_solicitado: false, historico: [...it.historico || [], { hora: ag, etapa: "CANCELADA", quem: QUEM() }] };
           put("ordens", o);
           addLog("OS_CANCELADA", o.os, `Aprovado por ${QUEM()}`, QUEM());
           return ok({ success: true, data: o });
         }
         if (c === "cancelar" && method === "POST") {
+          if (it.cancelado) return fail(400, "Esta O.S. j\xE1 est\xE1 cancelada.");
           const ag = now();
           const o = { ...it, cancelamento_solicitado: true, cancelamento_motivo: body.motivo, cancelamento_solicitado_por: QUEM(), cancelamento_solicitado_em: ag, historico: [...it.historico || [], { hora: ag, etapa: "CANCELAMENTO_SOLICITADO", quem: QUEM() }] };
+          if (ROLE !== "admin") {
+            put("ordens", o);
+            addLog("OS_CANCELAMENTO_SOLICITADO", o.os, `Motivo: ${body.motivo}`, QUEM());
+            return ok({ success: true, pendente: true, data: o });
+          }
           o.cancelado = true;
           o.status = "Cancelada";
           o.fechamento = ag;
+          o.cancelamento_solicitado = false;
           o.cancelamento_aprovado_por = QUEM();
           o.cancelamento_aprovado_em = ag;
           o.motivo_cancelamento = body.motivo;
           o.historico.push({ hora: ag, etapa: "CANCELADA", quem: QUEM(), acao: "Cancelada pelo admin" });
           put("ordens", o);
-          addLog("OS_CANCELAMENTO_SOLICITADO", o.os, `Motivo: ${body.motivo}`, QUEM());
+          addLog("OS_CANCELADA", o.os, `Cancelada pelo admin. Motivo: ${body.motivo}`, QUEM());
           return ok({ success: true, pendente: false, data: o });
         }
         if (c === "notas") {
@@ -1655,13 +1657,13 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
     }
     if (a === "stats" && !b) return ok(stats());
     if (a === "alerts") return ok(alerts());
-    if (a === "log") return ok({ data: [...S.log].sort((x, y) => String(y.created_at || "").localeCompare(String(x.created_at || ""))) });
+    if (a === "log") return ok({ data: [...estado.log].sort((x, y) => String(y.created_at || "").localeCompare(String(x.created_at || ""))) });
     if (a === "bases") {
       if (!b) {
-        if (method === "GET") return ok({ data: S.bases });
+        if (method === "GET") return ok({ data: estado.bases });
         if (method === "POST") return ok({ success: true, data: put("bases", { ...body, id: uid(), created_at: now() }) });
       } else {
-        const x = S.bases.find((i) => i.id === b);
+        const x = estado.bases.find((i) => i.id === b);
         if (!x) return fail(404, "Base n\xE3o encontrada");
         if (method === "PUT") return ok({ success: true, data: put("bases", { ...x, ...body, id: b }) });
         if (method === "DELETE") {
@@ -1670,41 +1672,45 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
         }
       }
     }
-    if (a === "frota" && b === "placas") return ok({ data: S.frota, total: S.frota.length });
+    if (a === "frota" && b === "placas") return ok({ data: estado.frota, total: estado.frota.length });
     if (a === "frota" && b === "placa") {
-      const x = S.frota.find((i) => i.placa === decodeURIComponent(c || "").toUpperCase());
+      const x = estado.frota.find((i) => i.placa === decodeURIComponent(c || "").toUpperCase());
       return x ? ok({ data: x }) : fail(404, "Placa n\xE3o encontrada");
     }
     if (a === "ocorrencias") {
-      if (!b) return ok({ data: S.ocorrencias });
+      if (!b) return ok({ data: estado.ocorrencias });
       if (c === "aceitar") {
-        const x = S.ocorrencias.find((i) => i.id === b);
+        const x = estado.ocorrencias.find((i) => i.id === b);
         if (!x) return fail(404, "Ocorr\xEAncia n\xE3o encontrada");
         return ok({ success: true, data: put("ocorrencias", { ...x, status: "aceita", aceita_por: QUEM(), aceita_em: now() }) });
       }
     }
     if (a === "notificacoes") {
-      if (!b) return ok({ data: S.notificacoes, nao_lidas: S.notificacoes.filter((n) => !n.lida).length });
+      if (!b) return ok({ data: estado.notificacoes, nao_lidas: estado.notificacoes.filter((n) => !n.lida).length });
       if (c === "ler") {
-        const x = S.notificacoes.find((i) => i.id === b);
-        if (x) put("notificacoes", { ...x, lida: true });
+        const x = estado.notificacoes.find((i) => i.id === b);
+        if (x) {
+          if (podeGravar("notificacoes", "update")) put("notificacoes", { ...x, lida: true });
+          else estado.notificacoes = estado.notificacoes.map((n) => n.id === b ? { ...n, lida: true } : n);
+        }
         return ok({ success: true });
       }
     }
     if (a === "configuracoes") {
       if (method === "PUT") {
-        S.config = { ...DEF_CONFIG, ...S.config, ...body };
+        exigirGravacao("config", "update");
+        estado.config = { ...DEF_CONFIG, ...estado.config, ...body };
         saveConfig();
       }
-      const cfg = { ...DEF_CONFIG, ...S.config };
+      const cfg = { ...DEF_CONFIG, ...estado.config };
       return ok({ ...cfg, data: cfg });
     }
     if (a === "pecas-envio") {
       if (!b) {
-        if (method === "GET") return ok({ data: S.pecas_envio });
+        if (method === "GET") return ok({ data: estado.pecas_envio });
         if (method === "POST") return ok({ success: true, data: put("pecas_envio", { ...body, id: uid(), etapa: "OR\xC7ANDO", abertura: now(), etapa_desde: now(), historico: [{ etapa: "OR\xC7ANDO", hora: now() }] }) });
       } else {
-        const x = S.pecas_envio.find((i) => i.id === b);
+        const x = estado.pecas_envio.find((i) => i.id === b);
         if (!x) return fail(404, "Envio n\xE3o encontrado");
         if (c === "mover" && method === "POST") {
           const o = { ...x, etapa: body.etapa || x.etapa, etapa_desde: now(), historico: [...x.historico || [], { etapa: body.etapa, hora: now() }] };
@@ -1724,16 +1730,17 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
     if (a === "users") return ok({ data: [{ id: "admin", email: "admin@print", nome: QUEM(), role: "admin", status: "ativo" }] });
     if (a === "sascar") {
       if (b === "posicoes") {
-        const dd = S.sascar && S.sascar.data || {};
-        return ok({ data: dd, total: Object.keys(dd).length, credencial_ok: true, atualizado: S.sascar && S.sascar.updated || 0 });
+        const dd = estado.sascar && estado.sascar.data || {};
+        return ok({ data: dd, total: Object.keys(dd).length, credencial_ok: true, atualizado: estado.sascar && estado.sascar.updated || 0 });
       }
       return ok({ data: [], credencial_ok: true });
     }
     if (a === "relatorio" && b === "gerencial2") {
+      if (ROLE !== "admin" && ROLE !== "gerente") return fail(403, "O relat\xF3rio gerencial \xE9 s\xF3 para gerentes e administradores.");
       const dias = parseInt(q.get("dias") || "30", 10) || 0;
       const agora = /* @__PURE__ */ new Date();
       const esc = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
-      let ords = S.ordens;
+      let ords = estado.ordens;
       if (dias > 0) {
         const corte = agora.getTime() - dias * 864e5;
         ords = ords.filter((o) => {
@@ -1741,27 +1748,17 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
           return !dt || dt.getTime() >= corte;
         });
       }
-      const total = ords.length, val = (o) => Number(o.valor) || 0;
+      const total = ords.length, val = valorDe;
       const custo = ords.reduce((t, o) => t + val(o), 0);
       const abertas = ords.filter((o) => !o.fechamento && !o.cancelado).length;
       const slas = ords.filter((o) => o.fechamento && o.sla_minutos).map((o) => Number(o.sla_minutos));
       const slaMed = slas.length ? slas.reduce((x, y) => x + y, 0) / slas.length : 0;
-      const cp = {};
-      ords.forEach((o) => {
-        const p = String(o.placa || "").toUpperCase();
-        if (p) cp[p] = (cp[p] || 0) + 1;
-      });
-      const nP = Object.keys(cp).length, reinc = nP ? Object.values(cp).filter((v) => v > 1).length / nP * 100 : 0;
-      const agg = (fn) => {
-        const m = {};
-        ords.forEach((o) => {
-          const k = fn(o) || "N\xE3o informado";
-          const x = m[k] = m[k] || { qtd: 0, custo: 0 };
-          x.qtd++;
-          x.custo += val(o);
-        });
-        return Object.entries(m).sort((x, y) => y[1].qtd - x[1].qtd);
-      };
+      const ordensPorPlaca = somarPor(ords.map((o) => String(o.placa || "").toUpperCase()).filter(Boolean), (p) => p);
+      const nP = Object.keys(ordensPorPlaca).length, reinc = nP ? Object.values(ordensPorPlaca).filter((v) => v > 1).length / nP * 100 : 0;
+      const agg = (fn) => Object.entries(agrupar(ords, fn, "N\xE3o informado", () => ({ qtd: 0, custo: 0 }), (x, o) => {
+        x.qtd++;
+        x.custo += val(o);
+      })).sort((x, y) => y[1].qtd - x[1].qtd);
       const TL = { mecanico: "Mec\xE2nico", eletrico: "El\xE9trico", eletronica: "Eletr\xF4nica", eletrica_mecanica: "El\xE9trica/Mec\xE2nica", borracharia: "Borracharia", guincho: "Guincho" };
       const porModelo = agg((o) => o.modelo).slice(0, 5), porUnid = agg((o) => o.operacao).slice(0, 5);
       const porTipo = agg((o) => TL[o.tipo_servico || ""] || o.tipo_servico || "Outros");
@@ -1777,42 +1774,36 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
       return ok({ html, total, dias });
     }
     if (a === "escalonamento") {
-      const cfg = { ...DEF_CONFIG, ...S.config || {} };
+      const cfg = { ...DEF_CONFIG, ...estado.config || {} };
       const hS = Number(cfg.escalonamento_supervisor_h) || 2, hG = Number(cfg.escalonamento_gerencia_h) || 4;
       const agora = Date.now();
       const out = [];
-      S.ordens.forEach((o) => {
+      estado.ordens.forEach((o) => {
         if (o.fechamento || o.cancelado) return;
         const base = o.ultima_atualizacao || o.abertura;
         if (!base) return;
         const dt = parseDt(base);
         if (!dt) return;
         const horas2 = (agora - dt) / 36e5;
-        if (horas2 >= hS) out.push({ id: o.id, os: o.os, placa: o.placa, status: o.status, operacao: o.operacao, horas_parada: r1(horas2), nivel: horas2 >= hG ? "GERENCIA" : "SUPERVISOR", ultima_atualizacao: base });
+        if (horas2 >= hS) out.push({ id: o.id, os: o.os, placa: o.placa, status: o.status, operacao: o.operacao, horas_parada: arred1(horas2), nivel: horas2 >= hG ? "GERENCIA" : "SUPERVISOR", ultima_atualizacao: base });
       });
       out.sort((x, y) => y.horas_parada - x.horas_parada);
       return ok({ data: out, total: out.length, gerencia: out.filter((x) => x.nivel === "GERENCIA").length });
     }
     if (a === "stats" && b === "orcado") {
-      const agg = (fn) => {
-        const m = {};
-        S.ordens.forEach((o) => {
-          const k = fn(o) || "Sem info";
-          const d2 = m[k] = m[k] || { orcado: 0, realizado: 0, qtd: 0 };
-          d2.orcado += Number(o.valor_orcado) || 0;
-          d2.realizado += Number(o.valor) || 0;
-          d2.qtd++;
-        });
-        return Object.entries(m).map(([nome, d2]) => {
-          const base = d2.orcado || d2.realizado || 1;
-          return { nome, ...d2, desvio_pct: d2.orcado ? r1((d2.realizado - d2.orcado) / base * 100) : 0 };
-        }).sort((x, y) => y.realizado - x.realizado);
-      };
-      const pm = Object.fromEntries(S.prestadores.map((p) => [p.id, p.nome]));
+      const agg = (fn) => Object.entries(agrupar(estado.ordens, fn, "Sem info", () => ({ orcado: 0, realizado: 0, qtd: 0 }), (d2, o) => {
+        d2.orcado += Number(o.valor_orcado) || 0;
+        d2.realizado += valorDe(o);
+        d2.qtd++;
+      })).map(([nome, d2]) => {
+        const base = d2.orcado || d2.realizado || 1;
+        return { nome, ...d2, desvio_pct: d2.orcado ? arred1((d2.realizado - d2.orcado) / base * 100) : 0 };
+      }).sort((x, y) => y.realizado - x.realizado);
+      const pm = Object.fromEntries(estado.prestadores.map((p) => [p.id, p.nome]));
       return ok({
         por_prestador: agg((o) => o.prestador_nome || pm[o.prestador_id] || "Sem prestador"),
         por_filial: agg((o) => o.operacao),
-        totais: { orcado: S.ordens.reduce((t, o) => t + (Number(o.valor_orcado) || 0), 0), realizado: S.ordens.reduce((t, o) => t + (Number(o.valor) || 0), 0), ordens: S.ordens.length }
+        totais: { orcado: estado.ordens.reduce((t, o) => t + (Number(o.valor_orcado) || 0), 0), realizado: estado.ordens.reduce((t, o) => t + valorDe(o), 0), ordens: estado.ordens.length }
       });
     }
     return ok({});
@@ -1848,13 +1839,14 @@ html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
       }
     }
     const podeEditar = ROLE === "admin" || ROLE === "gerente";
-    if (mth !== "GET" && (!podeEditar || seg[0] === "configuracoes" && ROLE !== "admin"))
+    const soMarcaLida = seg[0] === "notificacoes" && seg[2] === "ler";
+    if (mth !== "GET" && !soMarcaLida && (!podeEditar || seg[0] === "configuracoes" && ROLE !== "admin"))
       return J({ detail: "Sem permiss\xE3o para alterar. Fale com um administrador." }, 403);
     let res;
     try {
-      res = route((init && init.method || "GET").toUpperCase(), path, new URLSearchParams(qs || ""), body);
+      res = route(mth, path, new URLSearchParams(qs || ""), body);
     } catch (e) {
-      res = { s: 500, b: { detail: String(e && e.message || e) } };
+      res = { s: e && e.status || 500, b: { detail: String(e && e.message || e) } };
     }
     return new Response(JSON.stringify(res.b), { status: res.s, headers: { "Content-Type": "application/json" } });
   };
@@ -2172,7 +2164,7 @@ print("MB="+s64[${i}*${SIZE}:(${i}+1)*${SIZE}]+"=END", len(s64))
       return {};
     }
   }
-  var S2 = ({ children, title }) => /* @__PURE__ */ React.createElement("div", { className: "rounded-xl p-4 mb-4", style: { background: "var(--bg-card)", border: "1px solid var(--border)" } }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-widest mb-3", style: { color: "var(--text-muted)" } }, title), children);
+  var S = ({ children, title }) => /* @__PURE__ */ React.createElement("div", { className: "rounded-xl p-4 mb-4", style: { background: "var(--bg-card)", border: "1px solid var(--border)" } }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-widest mb-3", style: { color: "var(--text-muted)" } }, title), children);
   var Field = ({ label, children }) => /* @__PURE__ */ React.createElement("label", { className: "block" }, /* @__PURE__ */ React.createElement("span", { className: "text-[9px] uppercase tracking-wider font-bold", style: { color: "var(--text-muted)" } }, label), /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, children));
   var IS = { background: "var(--bg-alt)", border: "1px solid var(--border)", color: "var(--text)" };
   function Configuracoes() {
@@ -2242,7 +2234,7 @@ print("MB="+s64[${i}*${SIZE}:(${i}+1)*${SIZE}]+"=END", len(s64))
       await api2(`/users/${u.id}`, { method: "DELETE" });
       carregar();
     }
-    return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-base font-bold", style: { color: "var(--text)" } }, "Configura\xE7\xF5es"), /* @__PURE__ */ React.createElement("div", { className: "text-xs", style: { color: "var(--text-muted)" } }, "Vis\xEDvel apenas para administradores")), /* @__PURE__ */ React.createElement("button", { onClick: salvar2, className: "px-5 py-2 rounded-lg text-xs font-bold cursor-pointer", style: { background: "var(--accent-green)", color: "#fff" } }, "Salvar configura\xE7\xF5es")), msg && /* @__PURE__ */ React.createElement("div", { className: "mb-3 px-3 py-2 rounded-lg text-[11px] font-bold", style: { background: "rgba(37,214,71,.12)", color: "#146E1F" } }, msg), /* @__PURE__ */ React.createElement(S2, { title: "Socorro" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-3" }, /* @__PURE__ */ React.createElement(Field, { label: "Raio de busca (km)" }, /* @__PURE__ */ React.createElement("input", { type: "number", value: cfg.raio_km ?? 20, onChange: (e) => set("raio_km", Number(e.target.value)), className: "w-full px-3 py-2 rounded-lg text-sm", style: IS })), /* @__PURE__ */ React.createElement(Field, { label: "Escalonar supervisor (h)" }, /* @__PURE__ */ React.createElement("input", { type: "number", value: cfg.escalonamento_supervisor_h ?? 2, onChange: (e) => set("escalonamento_supervisor_h", Number(e.target.value)), className: "w-full px-3 py-2 rounded-lg text-sm", style: IS })), /* @__PURE__ */ React.createElement(Field, { label: "Escalonar ger\xEAncia (h)" }, /* @__PURE__ */ React.createElement("input", { type: "number", value: cfg.escalonamento_gerencia_h ?? 4, onChange: (e) => set("escalonamento_gerencia_h", Number(e.target.value)), className: "w-full px-3 py-2 rounded-lg text-sm", style: IS })))), /* @__PURE__ */ React.createElement(S2, { title: "Resumo di\xE1rio por e-mail" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3" }, /* @__PURE__ */ React.createElement(Field, { label: "Hor\xE1rio" }, /* @__PURE__ */ React.createElement("input", { value: cfg.resumo_horario ?? "07:30", onChange: (e) => set("resumo_horario", e.target.value), className: "w-full px-3 py-2 rounded-lg text-sm font-mono", style: IS })), /* @__PURE__ */ React.createElement(Field, { label: "Ativo" }, /* @__PURE__ */ React.createElement("button", { onClick: () => set("resumo_ativo", !cfg.resumo_ativo), className: "px-4 py-2 rounded-lg text-xs font-bold cursor-pointer w-full", style: { background: cfg.resumo_ativo ? "var(--accent-green)" : "var(--bg-alt)", color: cfg.resumo_ativo ? "#fff" : "var(--text-muted)", border: "1px solid var(--border)" } }, cfg.resumo_ativo ? "LIGADO" : "DESLIGADO")), /* @__PURE__ */ React.createElement(Field, { label: "Intervalo Sascar (min)" }, /* @__PURE__ */ React.createElement("input", { type: "number", value: cfg.sascar_intervalo_min ?? 5, onChange: (e) => set("sascar_intervalo_min", Number(e.target.value)), className: "w-full px-3 py-2 rounded-lg text-sm", style: IS })), /* @__PURE__ */ React.createElement(Field, { label: "Exibir bases" }, /* @__PURE__ */ React.createElement("button", { onClick: () => set("mostrar_bases", !cfg.mostrar_bases), className: "px-4 py-2 rounded-lg text-xs font-bold cursor-pointer w-full", style: { background: cfg.mostrar_bases ? "var(--accent-green)" : "var(--bg-alt)", color: cfg.mostrar_bases ? "#fff" : "var(--text-muted)", border: "1px solid var(--border)" } }, cfg.mostrar_bases ? "SIM" : "N\xC3O"))), /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement(Field, { label: "E-mails (separados por v\xEDrgula)" }, /* @__PURE__ */ React.createElement("input", { value: cfg.resumo_emails ?? "", onChange: (e) => set("resumo_emails", e.target.value), className: "w-full px-3 py-2 rounded-lg text-sm", style: IS })))), /* @__PURE__ */ React.createElement(S2, { title: "Bases" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-5 gap-2 mb-3" }, /* @__PURE__ */ React.createElement("input", { placeholder: "Nome", value: novaBase.nome, onChange: (e) => setNovaBase({ ...novaBase, nome: e.target.value }), className: "px-3 py-2 rounded-lg text-xs", style: IS }), /* @__PURE__ */ React.createElement("input", { placeholder: "Endere\xE7o", value: novaBase.endereco, onChange: (e) => setNovaBase({ ...novaBase, endereco: e.target.value }), className: "px-3 py-2 rounded-lg text-xs", style: IS }), /* @__PURE__ */ React.createElement("input", { placeholder: "Latitude", value: novaBase.lat, onChange: (e) => setNovaBase({ ...novaBase, lat: e.target.value }), className: "px-3 py-2 rounded-lg text-xs", style: IS }), /* @__PURE__ */ React.createElement("input", { placeholder: "Longitude", value: novaBase.lng, onChange: (e) => setNovaBase({ ...novaBase, lng: e.target.value }), className: "px-3 py-2 rounded-lg text-xs", style: IS }), /* @__PURE__ */ React.createElement("button", { onClick: criarBase, className: "rounded-lg text-xs font-bold cursor-pointer", style: { background: "var(--accent-green)", color: "#fff" } }, "Adicionar")), /* @__PURE__ */ React.createElement("div", { className: "max-h-72 overflow-y-auto" }, bases.map((b) => /* @__PURE__ */ React.createElement("div", { key: b.id, className: "flex items-center gap-2 py-1.5", style: { borderBottom: "1px dashed var(--border)" } }, /* @__PURE__ */ React.createElement("input", { value: b.nome || "", onChange: (e) => setBases((p) => p.map((x) => x.id === b.id ? { ...x, nome: e.target.value } : x)), className: "w-32 px-2 py-1 rounded text-xs", style: IS }), /* @__PURE__ */ React.createElement("input", { value: b.endereco || "", onChange: (e) => setBases((p) => p.map((x) => x.id === b.id ? { ...x, endereco: e.target.value } : x)), className: "flex-1 px-2 py-1 rounded text-xs", style: IS }), /* @__PURE__ */ React.createElement("input", { value: b.lat ?? "", onChange: (e) => setBases((p) => p.map((x) => x.id === b.id ? { ...x, lat: e.target.value } : x)), className: "w-24 px-2 py-1 rounded text-xs font-mono", style: IS }), /* @__PURE__ */ React.createElement("input", { value: b.lng ?? "", onChange: (e) => setBases((p) => p.map((x) => x.id === b.id ? { ...x, lng: e.target.value } : x)), className: "w-24 px-2 py-1 rounded text-xs font-mono", style: IS }), /* @__PURE__ */ React.createElement("button", { onClick: () => salvarBase(b), className: "px-2 py-1 rounded text-[10px] font-bold cursor-pointer", style: { color: "var(--accent-green)", border: "1px solid var(--border)" } }, "Salvar"), /* @__PURE__ */ React.createElement("button", { onClick: () => excluirBase(b.id), className: "px-2 py-1 rounded text-[10px] font-bold cursor-pointer", style: { color: "#C62828", border: "1px solid var(--border)" } }, "Excluir"))))), /* @__PURE__ */ React.createElement(S2, { title: "Usu\xE1rios" }, /* @__PURE__ */ React.createElement("div", { className: "max-h-80 overflow-y-auto" }, users.map((u) => /* @__PURE__ */ React.createElement("div", { key: u.id, className: "flex items-center gap-2 py-1.5", style: { borderBottom: "1px dashed var(--border)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold truncate", style: { color: "var(--text)" } }, u.nome || u.email), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] truncate", style: { color: "var(--text-muted)" } }, u.email)), /* @__PURE__ */ React.createElement("select", { value: u.role || "operador", onChange: (e) => mudarPerfil(u, e.target.value), disabled: u.role === "admin", className: "px-2 py-1 rounded text-[10px] font-bold", style: IS }, /* @__PURE__ */ React.createElement("option", { value: "operador" }, "Operador"), /* @__PURE__ */ React.createElement("option", { value: "consultor" }, "Consultor"), /* @__PURE__ */ React.createElement("option", { value: "gerente" }, "Gerente"), /* @__PURE__ */ React.createElement("option", { value: "admin" }, "Admin")), /* @__PURE__ */ React.createElement("button", { onClick: () => resetarSenha(u), className: "px-2 py-1 rounded text-[10px] font-bold cursor-pointer", style: { color: "var(--text-muted)", border: "1px solid var(--border)" } }, "Senha"), /* @__PURE__ */ React.createElement("button", { onClick: () => excluirUser(u), disabled: u.role === "admin", className: "px-2 py-1 rounded text-[10px] font-bold cursor-pointer", style: { color: u.role === "admin" ? "var(--text-soft)" : "#C62828", border: "1px solid var(--border)" } }, "Excluir"))))));
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-base font-bold", style: { color: "var(--text)" } }, "Configura\xE7\xF5es"), /* @__PURE__ */ React.createElement("div", { className: "text-xs", style: { color: "var(--text-muted)" } }, "Vis\xEDvel apenas para administradores")), /* @__PURE__ */ React.createElement("button", { onClick: salvar2, className: "px-5 py-2 rounded-lg text-xs font-bold cursor-pointer", style: { background: "var(--accent-green)", color: "#fff" } }, "Salvar configura\xE7\xF5es")), msg && /* @__PURE__ */ React.createElement("div", { className: "mb-3 px-3 py-2 rounded-lg text-[11px] font-bold", style: { background: "rgba(37,214,71,.12)", color: "#146E1F" } }, msg), /* @__PURE__ */ React.createElement(S, { title: "Socorro" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-3" }, /* @__PURE__ */ React.createElement(Field, { label: "Raio de busca (km)" }, /* @__PURE__ */ React.createElement("input", { type: "number", value: cfg.raio_km ?? 20, onChange: (e) => set("raio_km", Number(e.target.value)), className: "w-full px-3 py-2 rounded-lg text-sm", style: IS })), /* @__PURE__ */ React.createElement(Field, { label: "Escalonar supervisor (h)" }, /* @__PURE__ */ React.createElement("input", { type: "number", value: cfg.escalonamento_supervisor_h ?? 2, onChange: (e) => set("escalonamento_supervisor_h", Number(e.target.value)), className: "w-full px-3 py-2 rounded-lg text-sm", style: IS })), /* @__PURE__ */ React.createElement(Field, { label: "Escalonar ger\xEAncia (h)" }, /* @__PURE__ */ React.createElement("input", { type: "number", value: cfg.escalonamento_gerencia_h ?? 4, onChange: (e) => set("escalonamento_gerencia_h", Number(e.target.value)), className: "w-full px-3 py-2 rounded-lg text-sm", style: IS })))), /* @__PURE__ */ React.createElement(S, { title: "Resumo di\xE1rio por e-mail" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3" }, /* @__PURE__ */ React.createElement(Field, { label: "Hor\xE1rio" }, /* @__PURE__ */ React.createElement("input", { value: cfg.resumo_horario ?? "07:30", onChange: (e) => set("resumo_horario", e.target.value), className: "w-full px-3 py-2 rounded-lg text-sm font-mono", style: IS })), /* @__PURE__ */ React.createElement(Field, { label: "Ativo" }, /* @__PURE__ */ React.createElement("button", { onClick: () => set("resumo_ativo", !cfg.resumo_ativo), className: "px-4 py-2 rounded-lg text-xs font-bold cursor-pointer w-full", style: { background: cfg.resumo_ativo ? "var(--accent-green)" : "var(--bg-alt)", color: cfg.resumo_ativo ? "#fff" : "var(--text-muted)", border: "1px solid var(--border)" } }, cfg.resumo_ativo ? "LIGADO" : "DESLIGADO")), /* @__PURE__ */ React.createElement(Field, { label: "Intervalo Sascar (min)" }, /* @__PURE__ */ React.createElement("input", { type: "number", value: cfg.sascar_intervalo_min ?? 5, onChange: (e) => set("sascar_intervalo_min", Number(e.target.value)), className: "w-full px-3 py-2 rounded-lg text-sm", style: IS })), /* @__PURE__ */ React.createElement(Field, { label: "Exibir bases" }, /* @__PURE__ */ React.createElement("button", { onClick: () => set("mostrar_bases", !cfg.mostrar_bases), className: "px-4 py-2 rounded-lg text-xs font-bold cursor-pointer w-full", style: { background: cfg.mostrar_bases ? "var(--accent-green)" : "var(--bg-alt)", color: cfg.mostrar_bases ? "#fff" : "var(--text-muted)", border: "1px solid var(--border)" } }, cfg.mostrar_bases ? "SIM" : "N\xC3O"))), /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement(Field, { label: "E-mails (separados por v\xEDrgula)" }, /* @__PURE__ */ React.createElement("input", { value: cfg.resumo_emails ?? "", onChange: (e) => set("resumo_emails", e.target.value), className: "w-full px-3 py-2 rounded-lg text-sm", style: IS })))), /* @__PURE__ */ React.createElement(S, { title: "Bases" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-5 gap-2 mb-3" }, /* @__PURE__ */ React.createElement("input", { placeholder: "Nome", value: novaBase.nome, onChange: (e) => setNovaBase({ ...novaBase, nome: e.target.value }), className: "px-3 py-2 rounded-lg text-xs", style: IS }), /* @__PURE__ */ React.createElement("input", { placeholder: "Endere\xE7o", value: novaBase.endereco, onChange: (e) => setNovaBase({ ...novaBase, endereco: e.target.value }), className: "px-3 py-2 rounded-lg text-xs", style: IS }), /* @__PURE__ */ React.createElement("input", { placeholder: "Latitude", value: novaBase.lat, onChange: (e) => setNovaBase({ ...novaBase, lat: e.target.value }), className: "px-3 py-2 rounded-lg text-xs", style: IS }), /* @__PURE__ */ React.createElement("input", { placeholder: "Longitude", value: novaBase.lng, onChange: (e) => setNovaBase({ ...novaBase, lng: e.target.value }), className: "px-3 py-2 rounded-lg text-xs", style: IS }), /* @__PURE__ */ React.createElement("button", { onClick: criarBase, className: "rounded-lg text-xs font-bold cursor-pointer", style: { background: "var(--accent-green)", color: "#fff" } }, "Adicionar")), /* @__PURE__ */ React.createElement("div", { className: "max-h-72 overflow-y-auto" }, bases.map((b) => /* @__PURE__ */ React.createElement("div", { key: b.id, className: "flex items-center gap-2 py-1.5", style: { borderBottom: "1px dashed var(--border)" } }, /* @__PURE__ */ React.createElement("input", { value: b.nome || "", onChange: (e) => setBases((p) => p.map((x) => x.id === b.id ? { ...x, nome: e.target.value } : x)), className: "w-32 px-2 py-1 rounded text-xs", style: IS }), /* @__PURE__ */ React.createElement("input", { value: b.endereco || "", onChange: (e) => setBases((p) => p.map((x) => x.id === b.id ? { ...x, endereco: e.target.value } : x)), className: "flex-1 px-2 py-1 rounded text-xs", style: IS }), /* @__PURE__ */ React.createElement("input", { value: b.lat ?? "", onChange: (e) => setBases((p) => p.map((x) => x.id === b.id ? { ...x, lat: e.target.value } : x)), className: "w-24 px-2 py-1 rounded text-xs font-mono", style: IS }), /* @__PURE__ */ React.createElement("input", { value: b.lng ?? "", onChange: (e) => setBases((p) => p.map((x) => x.id === b.id ? { ...x, lng: e.target.value } : x)), className: "w-24 px-2 py-1 rounded text-xs font-mono", style: IS }), /* @__PURE__ */ React.createElement("button", { onClick: () => salvarBase(b), className: "px-2 py-1 rounded text-[10px] font-bold cursor-pointer", style: { color: "var(--accent-green)", border: "1px solid var(--border)" } }, "Salvar"), /* @__PURE__ */ React.createElement("button", { onClick: () => excluirBase(b.id), className: "px-2 py-1 rounded text-[10px] font-bold cursor-pointer", style: { color: "#C62828", border: "1px solid var(--border)" } }, "Excluir"))))), /* @__PURE__ */ React.createElement(S, { title: "Usu\xE1rios" }, /* @__PURE__ */ React.createElement("div", { className: "max-h-80 overflow-y-auto" }, users.map((u) => /* @__PURE__ */ React.createElement("div", { key: u.id, className: "flex items-center gap-2 py-1.5", style: { borderBottom: "1px dashed var(--border)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold truncate", style: { color: "var(--text)" } }, u.nome || u.email), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] truncate", style: { color: "var(--text-muted)" } }, u.email)), /* @__PURE__ */ React.createElement("select", { value: u.role || "operador", onChange: (e) => mudarPerfil(u, e.target.value), disabled: u.role === "admin", className: "px-2 py-1 rounded text-[10px] font-bold", style: IS }, /* @__PURE__ */ React.createElement("option", { value: "operador" }, "Operador"), /* @__PURE__ */ React.createElement("option", { value: "consultor" }, "Consultor"), /* @__PURE__ */ React.createElement("option", { value: "gerente" }, "Gerente"), /* @__PURE__ */ React.createElement("option", { value: "admin" }, "Admin")), /* @__PURE__ */ React.createElement("button", { onClick: () => resetarSenha(u), className: "px-2 py-1 rounded text-[10px] font-bold cursor-pointer", style: { color: "var(--text-muted)", border: "1px solid var(--border)" } }, "Senha"), /* @__PURE__ */ React.createElement("button", { onClick: () => excluirUser(u), disabled: u.role === "admin", className: "px-2 py-1 rounded text-[10px] font-bold cursor-pointer", style: { color: u.role === "admin" ? "var(--text-soft)" : "#C62828", border: "1px solid var(--border)" } }, "Excluir"))))));
   }
 
   // components/Cancelamentos.tsx
@@ -3236,8 +3228,8 @@ print("MB="+s64[${i}*${SIZE}:(${i}+1)*${SIZE}]+"=END", len(s64))
     return isNaN(t) ? 0 : t;
   };
   function calcInsights() {
-    const S4 = getState();
-    const ords = (S4.ordens || []).filter((o) => !o.cancelado);
+    const S3 = getState();
+    const ords = (S3.ordens || []).filter((o) => !o.cancelado);
     const agora = Date.now();
     const ultimas = [...ords].sort((a, b) => ts(b) - ts(a)).slice(0, 10).map((o) => ({
       os: o.os,
@@ -3397,7 +3389,7 @@ print("MB="+s64[${i}*${SIZE}:(${i}+1)*${SIZE}]+"=END", len(s64))
   function exportarGerencialPdf(ia) {
     const J = window.jspdf;
     if (!J || !J.jsPDF) throw { code: "lib" };
-    const S4 = getState();
+    const S3 = getState();
     const doc = new J.jsPDF({ unit: "pt", format: "a4" });
     const W = doc.internal.pageSize.getWidth();
     let y = 48;
@@ -3411,12 +3403,12 @@ print("MB="+s64[${i}*${SIZE}:(${i}+1)*${SIZE}]+"=END", len(s64))
     doc.text("Gerado em " + (/* @__PURE__ */ new Date()).toLocaleString("pt-BR"), 40, y);
     y += 20;
     doc.setTextColor(0);
-    const ab = S4.ordens.filter((o) => !o.fechamento && !o.cancelado).length;
-    const total = S4.ordens.reduce((t, o) => t + (Number(o.valor) || 0), 0);
-    doc.autoTable({ startY: y, theme: "grid", head: [["Indicador", "Valor"]], body: [["Total de O.S.", String(S4.ordens.length)], ["O.S. em aberto", String(ab)], ["Custo realizado", brl(total)], ["Prestadores cadastrados", String(S4.prestadores.length)]], styles: { fontSize: 9 }, headStyles: { fillColor: [22, 120, 60] }, margin: { left: 40, right: 40 } });
+    const ab = S3.ordens.filter((o) => !o.fechamento && !o.cancelado).length;
+    const total = S3.ordens.reduce((t, o) => t + (Number(o.valor) || 0), 0);
+    doc.autoTable({ startY: y, theme: "grid", head: [["Indicador", "Valor"]], body: [["Total de O.S.", String(S3.ordens.length)], ["O.S. em aberto", String(ab)], ["Custo realizado", brl(total)], ["Prestadores cadastrados", String(S3.prestadores.length)]], styles: { fontSize: 9 }, headStyles: { fillColor: [22, 120, 60] }, margin: { left: 40, right: 40 } });
     y = doc.lastAutoTable.finalY + 18;
     const placas = {};
-    S4.ordens.forEach((o) => {
+    S3.ordens.forEach((o) => {
       const p = String(o.placa || "\u2014").toUpperCase();
       const d = placas[p] = placas[p] || { placa: p, qtd: 0, custo: 0, modelo: o.modelo || "", falha: "" };
       d.qtd++;

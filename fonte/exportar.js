@@ -25,18 +25,41 @@ async function salvar(filename, data) {
   if (!dl) throw { code: "unavailable" };
   return dl.save({ filename, data });
 }
-function xlsxBlob(nomeAba, linhas) {
+// abas: [[nomeDaAba, linhas], …] → planilha .xlsx com uma aba para cada par.
+function xlsxBlob(abas) {
   const X = window.XLSX; if (!X) throw { code: "lib" };
-  const ws = X.utils.json_to_sheet(linhas.length ? linhas : [{ Aviso: "Sem dados" }]);
-  const cols = Object.keys(linhas[0] || { A: 1 }).map(k => ({ wch: Math.min(38, Math.max(k.length + 2, ...linhas.slice(0, 200).map(r => String(r[k] == null ? "" : r[k]).length + 2))) }));
-  ws["!cols"] = cols;
-  const wb = X.utils.book_new(); X.utils.book_append_sheet(wb, ws, nomeAba);
+  const wb = X.utils.book_new();
+  abas.forEach(([nomeAba, linhas]) => {
+    const ws = X.utils.json_to_sheet(linhas.length ? linhas : [{ Aviso: "Sem dados" }]);
+    ws["!cols"] = Object.keys(linhas[0] || { A: 1 }).map(k => ({ wch: Math.min(38, Math.max(k.length + 2, ...linhas.slice(0, 200).map(r => String(r[k] == null ? "" : r[k]).length + 2))) }));
+    X.utils.book_append_sheet(wb, ws, nomeAba.slice(0, 31));
+  });
   const arr = X.write(wb, { type: "array", bookType: "xlsx" });
   return new Blob([arr], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
 }
 const hoje = () => new Date().toISOString().slice(0, 10);
-export const exportarOrdensExcel = () => salvar("ordens-de-servico-" + hoje() + ".xlsx", xlsxBlob("Ordens de Serviço", linhasOrdens()));
-export const exportarPrestadoresExcel = () => salvar("prestadores-" + hoje() + ".xlsx", xlsxBlob("Prestadores", linhasPrestadores()));
+export const exportarOrdensExcel = () => salvar("ordens-de-servico-" + hoje() + ".xlsx", xlsxBlob([["Ordens de Serviço", linhasOrdens()]]));
+export const exportarPrestadoresExcel = () => salvar("prestadores-" + hoje() + ".xlsx", xlsxBlob([["Prestadores", linhasPrestadores()]]));
+
+// Relatório analítico (botão "Exportar Excel"): resumo, O.S., cortes por filial, prestador e status,
+// orçado × realizado e escalonamento, tudo calculado no navegador com os dados já carregados.
+export function linhasRelatorioAnalitico() {
+  const st = callRoute("/stats"), orc = callRoute("/stats/orcado"), esc = callRoute("/escalonamento");
+  const g = (st.indicadores_segmento || {}).geral || {};
+  const resumo = [
+    ["Gerado em", new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })],
+    ["Total de O.S.", st.total_ordens], ["O.S. em aberto", st.em_aberto], ["O.S. fechadas", st.ordens_fechadas],
+    ["Dentro do prazo (até 2h)", g.dentro_prazo || 0], ["Atrasadas (mais de 2h)", g.atrasadas || 0], ["RPM (% no prazo)", st.rpm],
+    ["SLA médio (min)", st.sla_medio], ["Custo realizado (R$)", Number((st.valor_total || 0).toFixed(2))], ["Custo orçado (R$)", Number(((orc.totais || {}).orcado || 0).toFixed(2))],
+    ["Veículos únicos", st.veiculos_unicos], ["Reincidência (%)", st.taxa_repetibilidade], ["Prestadores cadastrados", st.total_prestadores],
+    ["O.S. paradas há mais de 2h", (st.paradas || []).length],
+  ].map(([Indicador, Valor]) => ({ Indicador, Valor }));
+  const corte = l => l.map(r => ({ "Nome": r.nome, "O.S.": r.qtd, "Orçado": Number(r.orcado.toFixed(2)), "Realizado": Number(r.realizado.toFixed(2)), "Desvio (%)": r.desvio_pct }));
+  const porStatus = Object.entries((st.resumo || {}).por_status || {}).sort((a, b) => b[1] - a[1]).map(([Status, q]) => ({ Status, "O.S.": q }));
+  const escal = (esc.data || []).map(r => ({ "O.S.": r.os, "Placa": r.placa, "Filial": r.operacao || "", "Status": r.status || "", "Horas parada": r.horas_parada, "Nível": r.nivel === "GERENCIA" ? "Gerência" : "Supervisor" }));
+  return [["Resumo", resumo], ["Ordens de Serviço", linhasOrdens()], ["Por filial", corte(orc.por_filial || [])], ["Por prestador", corte(orc.por_prestador || [])], ["Por status", porStatus], ["Escalonamento", escal]];
+}
+export const exportarRelatorioAnalitico = () => salvar("relatorio-analitico-" + hoje() + ".xlsx", xlsxBlob(linhasRelatorioAnalitico()));
 
 function barras(doc, y, titulo, itens, cor, fmt) {
   const W = doc.internal.pageSize.getWidth(); const max = Math.max(1, ...itens.map(i => i.v));

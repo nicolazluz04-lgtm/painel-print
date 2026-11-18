@@ -1,5 +1,6 @@
 // Backend do painel rodando dentro da página. Intercepta fetch("/api/...") e responde
 // com a mesma lógica das rotas do serviço original, guardando os dados no banco da página.
+import { prepararPrestadores, prepararOrdens, LIMITE_LINHAS } from "./importar.js";
 const COLS = ["prestadores", "ordens", "bases", "acionamentos", "pecas_envio", "log", "ocorrencias", "notificacoes"];
 const estado = { prestadores: [], ordens: [], bases: [], acionamentos: [], pecas_envio: [], log: [], ocorrencias: [], notificacoes: [], frota: [], config: {} };
 const DEF_CONFIG = { escalonamento_gerencia_h: 4, escalonamento_supervisor_h: 2, mostrar_bases: true, mostrar_oficinas: true, raio_km: 100, resumo_ativo: false, resumo_emails: "", resumo_horario: "07:30", sascar_intervalo_min: 5 };
@@ -109,7 +110,7 @@ export function startBackend(db) {
   DB = db;
   if (!db) { readyRes(); return; }
   let faltam = COLS.length + 3; const umaPronta = () => { if (--faltam <= 0) readyRes(); };
-  setTimeout(readyRes, 8000);
+  const limite = setTimeout(readyRes, 8000); if (limite && limite.unref) limite.unref();   // não segura o processo nos testes
   // Assina a coleção; chama aoPrimeiro uma única vez, no primeiro snapshot ou no primeiro erro.
   const ouvir = (colecao, aoMudar, aoPrimeiro = () => {}) => {
     let primeiro = true; const marcar = () => { if (primeiro) { primeiro = false; aoPrimeiro(); } };
@@ -193,6 +194,43 @@ function alerts() {
 }
 const nextOs = () => String(estado.ordens.reduce((m, o) => Math.max(m, parseInt(o.os, 10) || 0), 0) + 1).padStart(6, "0");
 
+// ── importação de planilhas (T6) ──
+// O navegador lê o arquivo (importar.js → lerPlanilha) e manda as linhas; aqui validamos contra o que já existe
+// e, se não for simulação, criamos os registros novos. Nunca apaga nem altera o que já está cadastrado.
+const LOTE_IMPORTACAO = 25;
+async function importarLinhas(colecao, body, preparar, montar, evento) {
+  exigirGravacao(colecao, "insert");
+  const linhas = body && body.linhas;
+  if (!Array.isArray(linhas)) return { s: 400, b: { detail: "Envie as linhas da planilha." } };
+  if (linhas.length > LIMITE_LINHAS) return { s: 400, b: { detail: `A planilha tem ${linhas.length} linhas; o limite é ${LIMITE_LINHAS} por arquivo.` } };
+  const { novos, ignorados } = preparar(linhas);
+  if (body.simular) return { s: 200, b: { success: true, simulacao: true, prontos: novos.length, ignorados } };
+  const falhas = [];
+  for (let i = 0; i < novos.length; i += LOTE_IMPORTACAO) {
+    await Promise.all(novos.slice(i, i + LOTE_IMPORTACAO).map(({ _linha, ...item }) => {
+      let gravado = Promise.resolve(true);
+      const obj = put(colecao, montar(item), { silencioso: true, aoGravar: g => { gravado = g; } });
+      return gravado.then(ok => { if (!ok) falhas.push({ linha: _linha, nome: obj.nome || (obj.os ? "O.S. " + obj.os : ""), motivo: "O banco recusou a gravação" }); });
+    }));
+  }
+  const importados = novos.length - falhas.length;
+  if (importados) addLog(evento, "", `${importados} importado(s) por planilha; ${ignorados.length} ignorado(s)${falhas.length ? `; ${falhas.length} com falha` : ""}`, QUEM());
+  if (falhas.length) avisarFalhaGravacao(colecao, `${falhas.length} de ${novos.length} registro(s) não foram gravados`);
+  return { s: 200, b: { success: falhas.length === 0, importados, ignorados, falhas } };
+}
+const importarPrestadores = body => importarLinhas("prestadores", body,
+  linhas => prepararPrestadores(linhas, estado.prestadores),
+  p => ({ ...p, id: uid(), created_at: now(), importado_em: now() }), "PRESTADORES_IMPORTADOS");
+const importarOrdens = body => importarLinhas("ordens", body,
+  linhas => prepararOrdens(linhas, estado.ordens, estado.prestadores, now()),
+  item => {
+    const o = { ...item, id: uid(), created_at: now(), importado_em: now(), criado_por: QUEM(), criado_login: usuarioAtual.email, criado_perfil: ROLE };
+    ["motorista", "operador", "modelo", "marca", "rodovia", "localizacao"].forEach(k => { if (o[k]) o[k] = capitalizar(o[k]); });
+    o.veiculo = [o.marca, o.modelo, o.placa].filter(Boolean).join(" ").trim();
+    o.historico = [{ hora: now(), etapa: "OS_IMPORTADA", quem: o.criado_por }];
+    return o;
+  }, "OS_IMPORTADAS");
+
 // ── rotas ──
 function route(method, path, q, body) {
   const seg = path.split("/").filter(Boolean), [a, b, c, d] = seg;
@@ -201,6 +239,8 @@ function route(method, path, q, body) {
     if (!b) {
       if (method === "GET") return ok({ data: estado.prestadores, total: estado.prestadores.length });
       if (method === "POST") return ok({ success: true, data: put("prestadores", { ...body, id: uid(), created_at: now() }) });
+    } else if (b === "import") {
+      if (method === "POST") return importarPrestadores(body);
     } else {
       const p = estado.prestadores.find(x => x.id === b); if (!p) return fail(404, "Prestador não encontrado");
       if (method === "PUT") return ok({ success: true, data: put("prestadores", { ...p, ...body, id: b }) });
@@ -228,6 +268,8 @@ function route(method, path, q, body) {
         put("ordens", o); addLog("OS_CRIADA", o.os, `O.S. ${o.os} criada`, o.criado_por);
         return ok({ success: true, data: o });
       }
+    } else if (b === "import") {
+      if (method === "POST") return importarOrdens(body);
     } else if (b === "cancelamentos" && c === "pendentes") {
       const l = estado.ordens.filter(o => o.cancelamento_solicitado && !o.cancelado); return ok({ data: l, total: l.length });
     } else {
@@ -428,6 +470,6 @@ window.fetch = async (input, init) => {
   if (mth !== "GET" && !soMarcaLida && (!podeEditar || (seg[0] === "configuracoes" && ROLE !== "admin")))
     return J({ detail: "Sem permissão para alterar. Fale com um administrador." }, 403);
   let res;
-  try { res = route(mth, path,new URLSearchParams(qs || ""), body); } catch (e) { res = { s: (e && e.status) || 500, b: { detail: String(e && e.message || e) } }; }
+  try { res = await route(mth, path, new URLSearchParams(qs || ""), body); } catch (e) { res = { s: (e && e.status) || 500, b: { detail: String(e && e.message || e) } }; }
   return new Response(JSON.stringify(res.b), { status: res.s, headers: { "Content-Type": "application/json" } });
 };

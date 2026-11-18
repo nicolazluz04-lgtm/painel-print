@@ -14,7 +14,7 @@
 //   Requer o Playwright (`npm i -D playwright && npx playwright install chromium`, ou instalado globalmente).
 //
 // O QUE FAZ
-//   Entra no painel, percorre todas as abas do menu e abre as janelas Nova O.S., Novo Prestador,
+//   Entra no painel, percorre todas as abas do menu e abre as janelas Nova O.S., Importar O.S., Novo Prestador, Importar planilha,
 //   Novo Usuário, Editar e Report (e, no celular, o menu "Ações" dos botões flutuantes).
 //   SÓ NAVEGA E ABRE JANELAS: nunca clica em salvar, avançar ou excluir.
 //
@@ -158,7 +158,7 @@ async function sessao(b, tela) {
     const bs = await p.$$('aside nav button'); await bs[i].click(); await p.waitForTimeout(2500);
     await medir(String(i + 1).padStart(2, '0') + '-' + abas[i]);
   }
-  const janelas = [['Ordens de Serviço', 'Nova O.S'], ['Prestadores', 'Novo Prestador'], ['Usuários', 'Novo Usuário'], ['Atendimento', 'Editar'], ['Atendimento', 'Report']];
+  const janelas = [['Ordens de Serviço', 'Nova O.S'], ['Ordens de Serviço', 'Importar O.S.'], ['Prestadores', 'Novo Prestador'], ['Prestadores', 'Importar planilha'], ['Usuários', 'Novo Usuário'], ['Atendimento', 'Editar'], ['Atendimento', 'Report']];
   for (const [aba, botao] of janelas) {
     const idx = abas.findIndex(a => a.startsWith(aba)); if (idx < 0) continue;
     await (await p.$$('aside nav button'))[idx].click(); await p.waitForTimeout(2000);

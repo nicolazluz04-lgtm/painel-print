@@ -5,6 +5,10 @@
   var ok = C.SUPABASE_URL && C.SUPABASE_URL.indexOf("SEU-PROJETO") < 0 && window.supabase;
   var sb = ok ? window.supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY) : null;
   var me = null, session = null;
+  // Papéis conhecidos: a mesma lista de fonte/lib/papeis.ts (PAPEIS). Valor desconhecido vira "operador" (o menor acesso).
+  var PAPEIS = ["admin", "gerente", "operador"];
+  function papelValido(r) { return PAPEIS.indexOf(r) >= 0 ? r : "operador"; }
+  function podeEditar(r) { return r === "admin" || r === "gerente"; }
 
   var ready = (async function () {
     if (!sb) return null;
@@ -12,7 +16,7 @@
     if (!session) return null;
     var email = String(session.user.email || "").toLowerCase();
     var role = "operador", nome = "";
-    try { var r = await sb.rpc("my_role"); if (!r.error && r.data) role = r.data; } catch (e) {}
+    try { var r = await sb.rpc("my_role"); if (!r.error && r.data) role = papelValido(r.data); } catch (e) {}
     try { var u = await sb.from("usuarios").select("nome").eq("email", email).maybeSingle(); if (u.data && u.data.nome) nome = u.data.nome; } catch (e) {}
     me = { email: email, nome: nome || email, role: role };
     return me;
@@ -70,7 +74,7 @@
   }
 
   var caps = {
-    user: async function () { await ready; var role = me ? me.role : "operador"; return { isOwner: function () { return role === "admin"; }, canEdit: function () { return role === "admin" || role === "gerente"; }, can: function () { return role === "admin" || role === "gerente"; }, id: async function () { return me ? me.email : "anon"; } }; },
+    user: async function () { await ready; var role = papelValido(me && me.role); return { isOwner: function () { return role === "admin"; }, canEdit: function () { return podeEditar(role); }, can: function () { return podeEditar(role); }, id: async function () { return me ? me.email : "anon"; } }; },
     db: async function () { await ready; return sb && session ? { collection: col } : null; },
     downloads: async function () { return { save: async function (o) { var b = o.data instanceof Blob ? o.data : new Blob([o.data]); var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = o.filename; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000); } }; },
     mcp: async function () { return null; },   // frota e mapa vêm do servidor/arquivo; nada depende de conector

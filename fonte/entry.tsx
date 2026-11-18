@@ -6,6 +6,7 @@ import "./mapdata.js";
 import { startMapBase } from "./mapbase.js";
 import Dashboard from "./app/page";
 import ExportMenu from "./components/ExportMenu";
+import { papelValido } from "./lib/papeis";
 
 const mem: Record<string, string> = {};
 try { localStorage.setItem("_t", "1"); localStorage.removeItem("_t"); } catch (e) {
@@ -16,7 +17,7 @@ try { localStorage.setItem("_t", "1"); localStorage.removeItem("_t"); } catch (e
   const cl = (window as any).claude;
   // Identidade e papel vêm do Supabase (tabela usuarios, via claude-shim.js)
   const me: any = (window as any).__printReady ? await (window as any).__printReady : null;
-  const role = (me && me.role) || "operador";
+  const role = papelValido(me && me.role);
   const user = { id: (me && me.email) || "anon", email: (me && me.email) || "", nome: (me && me.nome) || (me && me.email) || "", role };
   setUser(user);
   let db: any = null;

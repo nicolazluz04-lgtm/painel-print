@@ -2,6 +2,7 @@
 // com a mesma lógica das rotas do serviço original, guardando os dados no banco da página.
 import { prepararPrestadores, prepararOrdens, LIMITE_LINHAS } from "./importar.js";
 import { papelValido, podeEditar, ehAdmin, papelPodeGravar } from "./lib/permissoes.js";
+import { atualizarInfoSascar } from "./sascar.js";
 const COLS = ["prestadores", "ordens", "bases", "acionamentos", "pecas_envio", "log", "ocorrencias", "notificacoes"];
 const estado = { prestadores: [], ordens: [], bases: [], acionamentos: [], pecas_envio: [], log: [], ocorrencias: [], notificacoes: [], frota: [], config: {} };
 const DEF_CONFIG = { escalonamento_gerencia_h: 4, escalonamento_supervisor_h: 2, mostrar_bases: true, mostrar_oficinas: true, raio_km: 100, resumo_ativo: false, resumo_emails: "", resumo_horario: "07:30", sascar_intervalo_min: 5 };
@@ -20,6 +21,21 @@ function marcarLidaLocal(id) {
   try { globalThis.localStorage?.setItem(chaveLidas(), JSON.stringify([...lidasLocais].slice(-500))); } catch { /* sem armazenamento: vale só nesta tela */ }
 }
 const comLidasLocais = lista => (lidasLocais.size ? lista.map(n => (lidasLocais.has(n.id) ? { ...n, lida: true } : n)) : lista);
+// Posições da Sascar (~500 veículos): baixadas só quando uma tela pede (mapas do Acompanhamento, Nova O.S.).
+// A partir daí ficam ao vivo, como as outras coleções.
+let sascarPronto = null;
+function garantirSascar() {
+  if (sascarPronto || !DB) return sascarPronto || Promise.resolve();
+  sascarPronto = new Promise(resolve => {
+    let feito = false; const fim = () => { if (!feito) { feito = true; resolve(); } };
+    DB.collection("sascar_pos").onSnapshot(snap => {
+      const d = snap.docs.find(x => x.id === "main"); estado.sascar = d ? d.data() : { data: {} };
+      atualizarInfoSascar(d ? estado.sascar : null); fim();
+    }, () => { atualizarInfoSascar(null, true); fim(); });
+    setTimeout(fim, 10000);   // sem resposta em 10 s: a tela segue sem posições
+  });
+  return sascarPronto;
+}
 const QUEM = () => usuarioAtual.email || usuarioAtual.nome || "Usuário";
 export const getState = () => estado;
 export const papelAtual = () => ROLE;
@@ -125,7 +141,6 @@ export function startBackend(db) {
   COLS.forEach(c => ouvir(c, snap => { const docs = snap.docs.map(d => ({ id: d.id, ...d.data(), _k: d.id })); estado[c] = c === "notificacoes" ? comLidasLocais(docs) : docs; }, umaPronta));
   ouvir("frota_placas", snap => { estado.frota = snap.docs.flatMap(d => d.data().items || []); }, umaPronta);
   ouvir("config", snap => { const d = docMain(snap); estado.config = d ? d.data() : {}; }, umaPronta);
-  ouvir("sascar_pos", snap => { const d = docMain(snap); estado.sascar = d ? d.data() : { data: {} }; });
   umaPronta();
 }
 
@@ -496,6 +511,7 @@ window.fetch = async (input, init) => {
   const soMarcaLida = seg[0] === "notificacoes" && seg[2] === "ler";   // operador marca como lida só na tela
   if (mth !== "GET" && !soMarcaLida && (!podeEditar(ROLE) || (seg[0] === "configuracoes" && !ehAdmin(ROLE))))
     return J({ detail: "Sem permissão para alterar. Fale com um administrador." }, 403);
+  if (seg[0] === "sascar" || (seg[0] === "frota" && seg[1] === "placa")) await garantirSascar();
   let res;
   try { res = await route(mth, path, new URLSearchParams(qs || ""), body); } catch (e) { res = { s: (e && e.status) || 500, b: { detail: String(e && e.message || e) } }; }
   return new Response(JSON.stringify(res.b), { status: res.s, headers: { "Content-Type": "application/json" } });

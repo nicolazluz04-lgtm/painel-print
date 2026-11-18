@@ -175,11 +175,13 @@ export default function Dashboard() {
   const loadUsers = useCallback(async () => { const r = await fetcher("/users"); setUsuarios(r?.data||[]); }, []);
   const aceitarOcorrencia = async (id: string) => { await fetcher(`/ocorrencias/${id}/aceitar`,{method:"POST",body:"{}"}); loadData(); };
   const refresh = useCallback(async () => { try { const [s, o, oc, al] = await Promise.all([fetcher("/stats"), fetcher("/ordens"), fetcher("/ocorrencias"), fetcher("/alerts")]); setStats(s||null); setOrdens(o?.data||[]); setOcorrencias(oc?.data||[]); setAlerts(al?.data||[]); const n = await fetcher("/notificacoes"); setNotifNaoLidas(n?.nao_lidas||0); } catch(e) { console.error(e); } }, []);
-  useEffect(() => { if (mounted) { loadPosicoesSascar(); } }, [mounted, loadPosicoesSascar]);
+  // Posições da Sascar só quando alguma tela usa: mapas do Acompanhamento e a janela de Nova O.S.
+  const precisaSascar = tab === "acompanhamento" || showO;
+  useEffect(() => { if (mounted && precisaSascar) { loadPosicoesSascar(); } }, [mounted, precisaSascar, loadPosicoesSascar]);
   useEffect(() => { if (mounted) { loadData(); if (canManage) loadUsers(); } }, [loadData, loadUsers, mounted, canManage]);
 
   // Poll silencioso a cada 10min (ordens, stats, ocorrências, alertas)
-  useEffect(() => { if (!mounted) return; const t = setInterval(() => { refresh(); loadPosicoesSascar(); }, 30000); return () => clearInterval(t); }, [mounted, refresh, loadPosicoesSascar]);
+  useEffect(() => { if (!mounted) return; const t = setInterval(() => { refresh(); if (precisaSascar) loadPosicoesSascar(); }, 30000); return () => clearInterval(t); }, [mounted, refresh, loadPosicoesSascar, precisaSascar]);
 
   const addP = async (e: React.FormEvent<HTMLFormElement>) => { e.preventDefault(); const fd = new FormData(e.currentTarget); const d = Object.fromEntries(fd.entries()); await fetcher("/prestadores",{method:"POST",body:JSON.stringify({...d,socorro_24h:d.socorro_24h==="on",fatura:d.fatura==="on"})}); setShowP(false); loadData(); };
   const addA = async (e: React.FormEvent<HTMLFormElement>) => { e.preventDefault(); const fd = new FormData(e.currentTarget); await fetcher("/acionamentos",{method:"POST",body:JSON.stringify(Object.fromEntries(fd.entries()))}); setShowA(false); setSelP(null); loadData(); };

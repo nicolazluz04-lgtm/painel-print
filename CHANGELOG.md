@@ -2,6 +2,12 @@
 
 Formato: [versionamento semântico](https://semver.org/lang/pt-BR/) — MAIOR.MENOR.CORREÇÃO.
 
+## [1.7.0] — 18/11/2026
+### Desempenho (teste de carga de 18/11)
+- Atualizações ao vivo por um único canal por usuário (antes eram 11, um por tipo de dado).
+- Posições da Sascar (~500 veículos) baixadas só ao abrir o Acompanhamento ou a janela de Nova O.S.
+- Site mais leve: o index.html caiu de 2,2 MB para 19 KB. O código vai em arquivo separado e as imagens de reserva do mapa (1,2 MB) só são baixadas se o satélite ao vivo falhar; ambos ficam guardados no navegador por um ano e só são baixados de novo quando mudam.
+
 ## [1.6.1] — 18/11/2026
 ### Corrigido (revisão final de 18/11)
 - Função de usuários aceita só os dois endereços do painel (saiu o endereço de teste local).

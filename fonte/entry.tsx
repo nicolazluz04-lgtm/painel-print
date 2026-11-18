@@ -1,7 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { startBackend, setUser } from "./backend.js";
-import { startSascar } from "./sascar.js";
 import "./mapdata.js";
 import { startMapBase } from "./mapbase.js";
 import Dashboard from "./app/page";
@@ -24,7 +23,6 @@ try { localStorage.setItem("_t", "1"); localStorage.removeItem("_t"); } catch (e
   try { db = await cl.use("db"); } catch (e) { db = null; }
   startBackend(db);
   startMapBase(db, false); // mapa já vem embutido (mapdata.js); não usa CodeWords
-  startSascar(db);
   localStorage.setItem("token", "local");
   localStorage.setItem("user", JSON.stringify(user));
   class Root extends React.Component<any, any> {

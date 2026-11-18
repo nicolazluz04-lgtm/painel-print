@@ -23,6 +23,24 @@
   })();
   window.__printReady = ready;
 
+  // Atualizações ao vivo: um canal só para todas as coleções pedidas juntas (na abertura são ~10),
+  // em vez de um canal por coleção. Coleções pedidas depois (ex.: posições da Sascar) ganham um canal próprio.
+  var ouvintes = {}, pendentes = [];
+  function aoVivo(name, h) {
+    (ouvintes[name] = ouvintes[name] || []).push(h);
+    if (ouvintes[name].length > 1) return;
+    pendentes.push(name);
+    if (pendentes.length === 1) setTimeout(abrirCanal, 0);
+  }
+  function abrirCanal() {
+    var nomes = pendentes.splice(0);
+    sb.channel("kv-" + Math.random().toString(36).slice(2))
+      .on("postgres_changes", { event: "*", schema: "public", table: "kv", filter: "collection=in.(" + nomes.join(",") + ")" }, function (p) {
+        var c = (p.new && p.new.collection) || (p.old && p.old.collection);
+        if (nomes.indexOf(c) < 0) return;
+        (ouvintes[c] || []).forEach(function (h) { h(p); });
+      }).subscribe();
+  }
   function col(name) {
     return {
       onSnapshot: function (cb, err) {
@@ -32,10 +50,9 @@
           if (r.error) { err && err(r.error); return; }
           (r.data || []).forEach(function (x) { rows[x.id] = x.data; }); emit();
         });
-        sb.channel("kv-" + name + "-" + Math.random().toString(36).slice(2))
-          .on("postgres_changes", { event: "*", schema: "public", table: "kv", filter: "collection=eq." + name }, function (p) {
-            if (p.eventType === "DELETE") delete rows[p.old.id]; else rows[p.new.id] = p.new.data; emit();
-          }).subscribe();
+        aoVivo(name, function (p) {
+          if (p.eventType === "DELETE") delete rows[p.old.id]; else rows[p.new.id] = p.new.data; emit();
+        });
         return function () {};
       },
       doc: function (id) {

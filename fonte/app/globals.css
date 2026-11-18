@@ -156,7 +156,7 @@ html.dark .bg-print-green-dark {
 
 
 /* ---------- Card de O.S. (redesenho) ---------- */
-.oscard{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:11px 12px;position:relative;color:var(--text);overflow:hidden}
+.oscard{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--raio);padding:var(--sp-3);min-width:0;position:relative;color:var(--text);overflow:hidden}
 .oscard::before{content:'';position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,#1E88E5,#0D47A1)}
 .oscard.crit::before{background:linear-gradient(90deg,#E53935,#B3261E)}
 .oscard.warn::before{background:linear-gradient(90deg,#F5B301,#C98C00)}
@@ -185,7 +185,12 @@ html.dark .bg-print-green-dark {
 .dark .oscard [style*="var(--text)"]{color:#e8f2ec !important}
 .dark .oscard [style*="var(--text-muted)"]{color:#8fa1a9 !important}
 
-.veic-img{width:230px;height:115px;object-fit:contain;flex:none}
+/* Grade dos cartões de O.S. (Atendimento): 1 coluna no celular, 2 no tablet, 3 até 1600 px, 4 acima */
+.grade-os{display:grid;gap:var(--sp-3);grid-template-columns:minmax(0,1fr)}
+@media (min-width:640px){.grade-os{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1200px){.grade-os{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (min-width:1601px){.grade-os{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.veic-img{width:min(230px,52%);height:auto;aspect-ratio:2/1;object-fit:contain;flex:none}
 .dark .veic-img{filter:invert(1) brightness(1.15);mix-blend-mode:screen}
 
 /* Card carregado: borda piscando */
@@ -197,3 +202,70 @@ html.dark .bg-print-green-dark {
 html:not(.dark) .oscard [style*="var(--text)"]{color:#121816 !important}
 html:not(.dark) .oscard [style*="var(--text-muted)"]{color:#3E4A46 !important}
 html:not(.dark) .oscard [style*="var(--text-soft)"]{color:#5C6862 !important}
+
+/* ---------- Escala de espaçamento (use só estes valores) ---------- */
+/* 4 · 8 · 12 · 16 · 24 · 32 px. Nas classes do Tailwind: 1 · 2 · 3 · 4 · 6 · 8. */
+:root {
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sidebar-mini: 76px;      /* menu lateral recolhido */
+  --pagina-pad: var(--sp-5); /* margem interna das telas */
+  --fab-reserva: 128px;      /* espaço no fim das telas para os botões flutuantes não cobrirem conteúdo */
+  --raio: 12px;
+}
+@media (max-width: 639px) {
+  :root { --sidebar-mini: 64px; --pagina-pad: var(--sp-3); --fab-reserva: 88px; }
+}
+
+/* ---------- Estrutura da página ---------- */
+.painel-conteudo { min-width: 0; }              /* conteúdo largo rola dentro da própria caixa, nunca a página */
+@media (max-width: 1023px) {                     /* tablet/celular: o menu aberto passa por cima, não empurra */
+  .painel-conteudo { margin-left: var(--sidebar-mini) !important; }
+}
+.painel-main { padding: var(--pagina-pad); padding-bottom: calc(var(--pagina-pad) + var(--fab-reserva)); }
+
+/* ---------- Cartões e janelas ---------- */
+.cartao { padding: var(--sp-5); border-radius: var(--raio); isolation: isolate; } /* camadas do mapa ficam dentro do cartão, abaixo dos botões flutuantes */
+.janela { padding: var(--sp-5); }
+@media (max-width: 639px) { .cartao, .janela { padding: var(--sp-4); } }
+
+/* ---------- Alvos de toque: mínimo 36 px no computador e 44 px no celular ---------- */
+:root { --alvo: 36px; }
+@media (max-width: 639px) { :root { --alvo: 44px; } }
+:where(button, select, textarea, [role=button],
+  input:not([type=checkbox], [type=radio], [type=hidden], [type=file], [type=range], [type=color])):not(.leaflet-container *) {
+  min-height: var(--alvo);
+}
+:where(button, select, [role=button]):not(.leaflet-container *) { min-width: var(--alvo); }
+/* caixa de seleção: o alvo é o rótulo inteiro */
+label:has(> input[type=checkbox]), label:has(> input[type=radio]) { min-height: var(--alvo); min-width: var(--alvo); }
+
+/* ---------- Rankings e legendas em grade fixa ---------- */
+/* posição · nome · barra · número — colunas iguais em todas as linhas */
+.ranking-linha {
+  display: grid; grid-template-columns: 16px minmax(0, 1fr) 56px 32px; align-items: center;
+  column-gap: var(--sp-2); margin-bottom: var(--sp-2); font-size: 11px;
+}
+.ranking-linha.sem-posicao { grid-template-columns: minmax(0, 1fr) 56px 64px; }
+.ranking-barra { display: block; height: 6px; border-radius: 99px; background: var(--border); overflow: hidden; }
+.ranking-barra > span { display: block; height: 100%; border-radius: 99px; background: var(--accent-green); }
+.legenda { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--sp-4); row-gap: var(--sp-1); font-size: 10px; color: var(--text-muted); }
+.legenda-item { display: inline-flex; align-items: center; gap: var(--sp-1); }
+.legenda-cor { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+.legenda-resumo { flex: 1 1 auto; text-align: right; }
+
+/* ---------- Tabelas no celular: lista de cartões (O.S. e Prestadores) ---------- */
+.lista-cartoes { display: flex; flex-direction: column; gap: var(--sp-3); }
+.cartao-item {
+  display: flex; flex-direction: column; gap: var(--sp-3); min-width: 0;
+  padding: var(--sp-4); border-radius: var(--raio);
+  background: var(--bg-alt); border: 1px solid var(--border);
+}
+.cartao-dados { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--sp-1) var(--sp-3); margin: 0; font-size: 12px; }
+.cartao-dados dt { color: var(--text-muted); }
+.cartao-dados dd { margin: 0; text-align: right; color: var(--text); overflow-wrap: anywhere; }
+.cartao-acoes { display: flex; flex-wrap: wrap; gap: var(--sp-2); }

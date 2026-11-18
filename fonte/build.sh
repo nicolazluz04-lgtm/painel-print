@@ -6,6 +6,8 @@ npx esbuild entry.tsx --bundle --format=iife --jsx=transform --target=es2020 --o
  --alias:lucide-react=$S/lucide.js --alias:leaflet=$S/leaflet.js --alias:next/dynamic=$S/next-dynamic.js --alias:next-themes=$S/next-themes.js --log-level=warning
 python3 - <<'P'
 h=open('template.html',encoding='utf8').read()
+css=open('app/globals.css',encoding='utf8').read().replace('@import "leaflet/dist/leaflet.css";\n','')
+h=h.replace('\n/* o conteúdo de app/globals.css é inserido aqui pelo build.sh */\n',css)  # tema e estilos: um só arquivo
 i=h.index('<script>\n',h.index('lucide-react.min.js'))+len('<script>\n')
 js=open('out/app.js',encoding='utf8').read()
 body=h[:i]+js+"\n</script>\n"

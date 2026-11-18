@@ -17,7 +17,7 @@ function dataHora(iso?: string) {
   try { return new Date(iso).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); } catch { return "—"; }
 }
 
-export default function Cancelamentos() {
+export default function Cancelamentos({ podeAprovar = false }: { podeAprovar?: boolean }) {
   const [itens, setItens] = useState<any[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [msg, setMsg] = useState("");
@@ -52,15 +52,15 @@ export default function Cancelamentos() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-base font-bold" style={{ color: "var(--text)" }}>Cancelamentos pendentes</h2>
-          <div className="text-xs" style={{ color: "var(--text-muted)" }}>Pedidos de exclusão aguardando sua aprovação</div>
+          <div className="text-xs" style={{ color: "var(--text-muted)" }}>{podeAprovar ? "Pedidos de exclusão aguardando sua aprovação" : "Pedidos de exclusão aguardando a aprovação de um administrador"}</div>
         </div>
-        <button onClick={carregar} className="px-3 py-1.5 rounded-lg text-[11px] font-bold cursor-pointer" style={{ border: "1px solid var(--border-bright)", color: "var(--text-muted)" }}>Atualizar</button>
+        <button onClick={carregar} className="px-3 py-2 rounded-lg text-[11px] font-bold cursor-pointer" style={{ border: "1px solid var(--border-bright)", color: "var(--text-muted)" }}>Atualizar</button>
       </div>
 
       {msg && <div className="mb-3 px-3 py-2 rounded-lg text-[11px] font-bold" style={{ background: "rgba(37,214,71,.12)", color: "#146E1F" }}>{msg}</div>}
 
       {carregando ? (
-        <p className="text-center py-10 text-sm" style={{ color: "var(--text-muted)" }}>Carregando...</p>
+        <p className="text-center py-8 text-sm" style={{ color: "var(--text-muted)" }}>Carregando...</p>
       ) : itens.length === 0 ? (
         <div className="rounded-xl p-8 text-center" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>Nenhum pedido aguardando aprovação.</p>
@@ -80,10 +80,10 @@ export default function Cancelamentos() {
                   <b>Motivo:</b> {o.cancelamento_motivo || "não informado"}
                 </div>
               </div>
-              <div className="flex gap-2 shrink-0">
+              {podeAprovar && <div className="flex gap-2 shrink-0">
                 <button onClick={() => aprovar(o.id)} className="px-4 py-2 rounded-lg text-xs font-bold cursor-pointer" style={{ background: "var(--accent-green)", color: "#fff" }}>Aprovar</button>
                 <button onClick={() => rejeitar(o)} className="px-4 py-2 rounded-lg text-xs font-bold cursor-pointer" style={{ border: "1px solid #C62828", color: "#C62828" }}>Rejeitar</button>
-              </div>
+              </div>}
             </div>
           </div>
         ))

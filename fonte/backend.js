@@ -64,20 +64,41 @@ class SemPermissao extends Error { constructor(msg) { super(msg || "Sem permiss�
 function exigirGravacao(colecao, acao) { if (!podeGravar(colecao, acao)) throw new SemPermissao(); }
 
 // ── persistência ──
-function put(col, obj) {
+// A tela muda na hora; a gravação no banco vem em seguida. Se o banco recusar (sem permissão, sem rede…),
+// a mudança é desfeita na tela e o usuário é avisado (evento "painel:erro-gravacao", mostrado pelo page.tsx).
+const NOMES_COLECAO = { prestadores: "prestador", ordens: "O.S.", bases: "base", acionamentos: "acionamento", pecas_envio: "envio de peça", log: "log", ocorrencias: "ocorrência", notificacoes: "notificação", config: "configurações" };
+function avisarFalhaGravacao(colecao, erro) {
+  const motivo = String((erro && (erro.message || erro.details)) || erro || "erro desconhecido");
+  const msg = `Não foi possível salvar (${NOMES_COLECAO[colecao] || colecao}) no banco: ${motivo}. A alteração foi desfeita na tela.`;
+  console.error(msg, erro);
+  try { window.dispatchEvent(new CustomEvent("painel:erro-gravacao", { detail: { colecao, mensagem: msg } })); } catch (e) { /* sem janela (testes) */ }
+}
+// Grava no banco; em caso de erro, desfaz(). Devolve uma promessa que resolve true/false (nunca rejeita).
+function gravar(colecao, operacao, desfazer, silencioso) {
+  if (!DB) return Promise.resolve(true);
+  return operacao().then(() => true, erro => { desfazer(); if (!silencioso) avisarFalhaGravacao(colecao, erro); return false; });
+}
+function put(col, obj, opcoes = {}) {
   const i = estado[col].findIndex(x => x.id === obj.id);
   exigirGravacao(col, i >= 0 ? "update" : "insert");
-  if (i >= 0) { if (!obj._k && estado[col][i]._k) obj._k = estado[col][i]._k; estado[col][i] = obj; } else estado[col].unshift(obj);
-  if (DB) { const { _k, ...clean } = obj; DB.collection(col).doc(_k || obj.id).set(clean).catch(() => {}); }
+  const anterior = i >= 0 ? estado[col][i] : null;
+  if (anterior) { if (!obj._k && anterior._k) obj._k = anterior._k; estado[col][i] = obj; } else estado[col].unshift(obj);
+  const { _k, ...clean } = obj;
+  const gravado = gravar(col, () => DB.collection(col).doc(_k || obj.id).set(clean), () => {
+    // Desfaz só se ninguém mexeu nesse registro depois (tempo real ou outra edição).
+    const j = estado[col].indexOf(obj); if (j < 0) return;
+    if (anterior) estado[col][j] = anterior; else estado[col].splice(j, 1);
+  }, opcoes.silencioso);
+  if (opcoes.aoGravar) opcoes.aoGravar(gravado);
   return obj;
 }
 function del(col, id) {
   exigirGravacao(col, "delete");
   const x = estado[col].find(i => i.id === id);
   estado[col] = estado[col].filter(i => i.id !== id);
-  if (DB) DB.collection(col).doc((x && x._k) || id).delete().catch(() => {});
+  gravar(col, () => DB.collection(col).doc((x && x._k) || id).delete(), () => { if (x && !estado[col].some(i => i.id === id)) estado[col].unshift(x); });
 }
-function saveConfig() { if (DB) DB.collection("config").doc("main").set(estado.config).catch(() => {}); }
+function saveConfig(anterior) { gravar("config", () => DB.collection("config").doc("main").set(estado.config), () => { estado.config = anterior; }); }
 function addLog(evento, os, detalhe, quem = "Sistema") {
   put("log", { id: uid(), evento, os, detalhe, quem, created_at: now() });
 }
@@ -293,8 +314,8 @@ function route(method, path, q, body) {
     }
   }
   if (a === "configuracoes") {
-    if (method === "PUT") { exigirGravacao("config", "update"); estado.config = { ...DEF_CONFIG, ...estado.config, ...body }; saveConfig(); }
-    const cfg = { ...DEF_CONFIG, ...estado.config }; return ok({ ...cfg, data: cfg });
+    if (method === "PUT") { exigirGravacao("config", "update"); const anterior = estado.config; estado.config = { ...DEF_CONFIG, ...estado.config, ...body }; saveConfig(anterior); }
+    const cfg = { ...DEF_CONFIG, ...estado.config }; return ok({ ...cfg, data: cfg, success: true });
   }
   if (a === "pecas-envio") {
     if (!b) {

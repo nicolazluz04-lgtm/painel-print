@@ -1,17 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
 import { ORDEM_PAPEIS, rotuloPapel } from "@/lib/papeis";
 
-function tkn() { try { return localStorage.getItem("token") || ""; } catch { return ""; } }
-
-async function api(url: string, init?: RequestInit) {
-  const sep = url.includes("?") ? "&" : "?";
-  try {
-    const r = await fetch(`/api${url}${sep}token=${encodeURIComponent(tkn())}`, { headers: { "Content-Type": "application/json" }, ...init });
-    const txt = await r.text();
-    try { return JSON.parse(txt); } catch { return {}; }
-  } catch { return {}; }
-}
 
 const S = ({ children, title }: any) => (
   <div className="rounded-xl p-4 mb-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>

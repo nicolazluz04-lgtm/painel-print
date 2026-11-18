@@ -18,6 +18,7 @@ import DefeitoPicker from "@/components/DefeitoPicker";
 import Configuracoes from "@/components/Configuracoes";
 import Cancelamentos from "@/components/Cancelamentos";
 import { OPCOES_PAPEL, papelVeAba, rotuloPapel } from "@/lib/papeis";
+import { api, EVENTO_ERRO } from "@/lib/api";
 
 const STATUS_ABERTOS = new Set(["Aguardando","Em atendimento","Prestador localizado","Prestador a caminho","Prestador no local","Aguardando Orçamento","Serviço em execução"]);
 
@@ -45,16 +46,8 @@ interface Ocorrencia { id: string; placa: string; tipo: string; descricao: strin
 
 const API = "/api";
 let setGlobalLoggedIn: (v: boolean) => void = () => {};
-async function fetcher(url: string, opts?: RequestInit) {
-  const headers = getAuthHeaders();
-  try {
-    const res = await fetch(`${API}${url}`, { headers, ...opts });
-    if (res.status === 401) { localStorage.removeItem("token"); localStorage.removeItem("user"); void 0; return {}; }
-    const txt = await res.text();
-    if (!txt) return {};
-    try { return JSON.parse(txt); } catch { return {}; }
-  } catch { return {}; }
-}
+// Todas as chamadas da tela passam por api() (lib/api.ts): alteração recusada vira aviso na tela.
+const fetcher = api;
 
 function fmtBRT(iso?: string | null, opts?: Intl.DateTimeFormatOptions): string {
   if (!iso) return "—";
@@ -208,6 +201,8 @@ export default function Dashboard() {
   const [notas, setNotas] = useState<{sigla:string;nome?:string;texto:string;hora:string;quem:string}[]>([]);
   const [notificacoes, setNotificacoes] = useState<{id:string;mensagem:string;os:string;lida:boolean;created_at:string}[]>([]);
   const [notifNaoLidas, setNotifNaoLidas] = useState(0);
+  const [avisoErro, setAvisoErro] = useState("");
+  useEffect(() => { let t: any; const f = (e: any) => { setAvisoErro(String(e?.detail?.mensagem || "Não foi possível salvar.")); clearTimeout(t); t = setTimeout(() => setAvisoErro(""), 10000); }; window.addEventListener(EVENTO_ERRO, f); return () => { window.removeEventListener(EVENTO_ERRO, f); clearTimeout(t); }; }, []);
   const [showNotif, setShowNotif] = useState(false);
   const [editCarga, setEditCarga] = useState("");
   const [maisDetEdit, setMaisDetEdit] = useState(false);
@@ -252,6 +247,7 @@ export default function Dashboard() {
   const acoesP = (p:Prestador) => (<>{canWrite&&<button onClick={()=>setEditP(p)} className="p-2 rounded hover:bg-print-green/10 text-print-green" title="Editar"><Pencil className="w-4 h-4"/></button>}<button onClick={()=>{setSelP(p);setShowA(true)}} className="p-2 rounded hover:bg-print-green/10 text-print-green" title="Acionar"><Phone className="w-4 h-4"/></button><button onClick={()=>delP(p.id)} title="Remover prestador" className="p-2 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500"><Trash2 className="w-4 h-4"/></button></>);
   const acoesOS = (o:OrdemServico) => (<><button onClick={()=>{setNotasOpen(o); carregarNotas(o.id);}} className="px-2 py-1 rounded text-[10px] font-bold border cursor-pointer" style={{borderColor:"var(--border-bright)",color:"var(--text-muted)"}} title="Report / bloco de notas">Report</button>{canManage&&<button onClick={async()=>{if(!confirm("Excluir a O.S. "+(o.os||"")+"? Esta acao nao pode ser desfeita."))return;await fetcher("/ordens/"+o.id,{method:"DELETE"});loadData();}} className="px-2 py-1 rounded text-[10px] font-bold cursor-pointer" style={{border:"1px solid #C62828",color:"#C62828"}}>Excluir</button>}<button onClick={()=>setEditO(o)} className="p-2 rounded hover:bg-print-green/10 text-print-green" title="Editar"><Pencil className="w-4 h-4"/></button>{!o.fechamento&&!o.cancelado&&<button onClick={()=>setCloseO(o)} className="p-2 rounded hover:bg-print-green/15 text-print-green" title="Liberar / Fechar"><CheckCircle2 className="w-4 h-4"/></button>}{canWrite&&!o.cancelado&&!(o as any).cancelamento_solicitado&&<button onClick={()=>setCancelO(o)} className="p-2 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500" title="Solicitar cancelamento"><Ban className="w-4 h-4"/></button>}</>);
   return (<div className="flex min-h-screen" style={{background:"var(--bg)",color:"var(--text)"}}>
+    {avisoErro&&<div role="alert" className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] flex items-start gap-3 px-4 py-3 rounded-xl shadow-2xl text-sm" style={{width:"min(560px, calc(100vw - 32px))",background:"#C62828",color:"#fff"}}><AlertTriangle className="w-5 h-5 shrink-0"/><span className="flex-1 min-w-0">{avisoErro}</span><button onClick={()=>setAvisoErro("")} aria-label="Fechar aviso" className="shrink-0 font-bold px-2 cursor-pointer" style={{minWidth:36,minHeight:36}}>×</button></div>}
     <Sidebar tab={tab as NavTab} setTab={setTab as (t:NavTab)=>void} user={user} logout={logout} ordensAbertos={ordensAbertos} ocorrPend={ocorrPend} theme={theme||"dark"} setTheme={setTheme} collapsed={!sidebarOpen} onToggle={()=>setSidebarOpen(v=>!v)}/>
     <div className="flex-1 min-h-screen painel-conteudo" style={{marginLeft:sidebarOpen?"var(--sidebar-w)":"var(--sidebar-mini)",transition:"margin-left 0.25s ease"}}>
     <main className="painel-main">{!loading&&<><button onClick={exportExcel} className="fixed bottom-[76px] right-6 z-40 hidden sm:flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold cursor-pointer shadow-xl transition-all hover:scale-105 hover:shadow-2xl" style={{background:"var(--accent-green)",color:"#fff"}} title="Baixar relatório analítico em Excel"><FileDown size={15}/>Exportar Excel</button><button onClick={()=>{setShowNotif(v=>!v); loadNotificacoes();}} className="fixed bottom-[76px] right-[190px] z-40 hidden sm:flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold cursor-pointer shadow-xl transition-all hover:scale-105" style={{background:"var(--bg-card)",color:"var(--text)",border:"1px solid var(--border-bright)"}} title="Notificações" aria-label="Notificações"><BellRing size={15}/>{notifNaoLidas>0&&<span className="text-[10px] font-bold px-2 rounded-full" style={{background:"var(--accent-red)",color:"#fff"}}>{notifNaoLidas}</span>}</button>{showNotif&&<div className="fixed bottom-20 sm:bottom-36 right-4 sm:right-6 z-50 w-80 max-w-[calc(100vw-2rem)] max-h-96 overflow-y-auto rounded-xl shadow-2xl p-3 space-y-2" style={{background:"var(--bg-card)",border:"1px solid var(--border-bright)"}}><div className="flex items-center justify-between gap-2"><span className="text-xs font-bold" style={{color:"var(--text)"}}>Notificações</span><button onClick={()=>setShowNotif(false)} className="flex items-center justify-center rounded-lg" style={{color:"var(--text-muted)"}} aria-label="Fechar notificações" title="Fechar"><X size={14}/></button></div>{notificacoes.length===0&&<p className="text-xs text-center py-4" style={{color:"var(--text-muted)"}}>Nenhuma notificação</p>}{notificacoes.map(n=>(<div key={n.id} className="p-2 rounded-lg" style={{background:n.lida?"var(--bg-alt)":"var(--accent-green-glow)",border:"1px solid var(--border)"}}><p className="text-xs" style={{color:"var(--text)"}}>{n.mensagem}</p><p className="text-[9px] mt-1" style={{color:"var(--text-muted)"}}>{n.created_at?new Date(n.created_at).toLocaleString("pt-BR",{timeZone:"America/Sao_Paulo"}):""}</p></div>))}</div>}</>}{loading&&<p className="text-center py-16" style={{color:"var(--text-muted)"}}>Carregando...</p>}

@@ -194,6 +194,29 @@ function alerts() {
 }
 const nextOs = () => String(estado.ordens.reduce((m, o) => Math.max(m, parseInt(o.os, 10) || 0), 0) + 1).padStart(6, "0");
 
+// ── frota (T9): cadastro frota_placas + posição ao vivo da Sascar (sascar_pos) ──
+// Só leitura: o km e a última posição vêm da Sascar na hora de consultar; nada é gravado em frota_placas
+// (essa coleção continua só para administradores). Placa que a Sascar vê e o cadastro não tem aparece
+// com origem "sascar" (sem filial/modelo, que a Sascar não informa nas posições).
+const placaBase = v => String(v || "").trim().toUpperCase().replace(/-\d+$/, "");
+function frotaComSascar() {
+  const pos = (estado.sascar && estado.sascar.data) || {};
+  const porPlaca = {};
+  Object.values(pos).forEach(p => { if (p && p.placa) { const k = placaBase(p.placa); if (!porPlaca[k] || String(p.data || "") > String(porPlaca[k].data || "")) porPlaca[k] = p; } });
+  const vistas = new Set();
+  const lista = estado.frota.map(f => {
+    const k = placaBase(f.placa); vistas.add(k);
+    const p = porPlaca[k]; if (!p) return f;
+    const odo = Number(p.odometro) || 0, kmCad = Number(f.km_ultimo) || 0;
+    return { ...f, km_ultimo: odo > kmCad ? odo : f.km_ultimo, km_fonte: odo > kmCad ? "sascar" : (f.km_fonte || "cadastro"), ultima_posicao: { lat: p.lat, lng: p.lng, data: p.data, cidade: p.cidade, uf: p.uf } };
+  });
+  Object.entries(porPlaca).forEach(([k, p]) => {
+    if (vistas.has(k)) return;
+    lista.push({ placa: k, filial: "", modelo: "", marca: "", origem: "sascar", km_ultimo: Number(p.odometro) || undefined, km_fonte: "sascar", ultima_posicao: { lat: p.lat, lng: p.lng, data: p.data, cidade: p.cidade, uf: p.uf } });
+  });
+  return lista;
+}
+
 // ── importação de planilhas (T6) ──
 // O navegador lê o arquivo (importar.js → lerPlanilha) e manda as linhas; aqui validamos contra o que já existe
 // e, se não for simulação, criamos os registros novos. Nunca apaga nem altera o que já está cadastrado.
@@ -337,8 +360,8 @@ function route(method, path, q, body) {
     if (!b) { if (method === "GET") return ok({ data: estado.bases }); if (method === "POST") return ok({ success: true, data: put("bases", { ...body, id: uid(), created_at: now() }) }); }
     else { const x = estado.bases.find(i => i.id === b); if (!x) return fail(404, "Base não encontrada"); if (method === "PUT") return ok({ success: true, data: put("bases", { ...x, ...body, id: b }) }); if (method === "DELETE") { del("bases", b); return ok({ success: true }); } }
   }
-  if (a === "frota" && b === "placas") return ok({ data: estado.frota, total: estado.frota.length });
-  if (a === "frota" && b === "placa") { const x = estado.frota.find(i => i.placa === decodeURIComponent(c || "").toUpperCase()); return x ? ok({ data: x }) : fail(404, "Placa não encontrada"); }
+  if (a === "frota" && b === "placas") { const l = frotaComSascar(); return ok({ data: l, total: l.length, so_sascar: l.filter(x => x.origem === "sascar").length }); }
+  if (a === "frota" && b === "placa") { const pl = placaBase(decodeURIComponent(c || "")); const x = frotaComSascar().find(i => placaBase(i.placa) === pl); return x ? ok({ data: x }) : fail(404, "Placa não encontrada"); }
   if (a === "ocorrencias") {
     if (!b) return ok({ data: estado.ocorrencias });
     if (c === "aceitar") { const x = estado.ocorrencias.find(i => i.id === b); if (!x) return fail(404, "Ocorrência não encontrada"); return ok({ success: true, data: put("ocorrencias", { ...x, status: "aceita", aceita_por: QUEM(), aceita_em: now() }) }); }

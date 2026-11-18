@@ -204,3 +204,20 @@ test("falha do banco: a tela desfaz a mudança e avisa o usuário", async () => 
   assert.match(eventos[0].detail.mensagem, /Não foi possível salvar \(prestador\)/);
 });
 
+test("frota: km e última posição da Sascar entram na consulta, sem gravar em frota_placas", async () => {
+  const db = bancoFalso();
+  be.startBackend(db);
+  const st = be.getState();
+  st.frota = [{ placa: "ABC1D23", filial: "SP", modelo: "FH", km_ultimo: 1000 }, { placa: "QQQ0000", filial: "BA", km_ultimo: 50 }];
+  st.sascar = { data: { "ABC1D23-1": { placa: "ABC1D23-1", lat: -23.5, lng: -46.6, data: "2026-11-18 09:00", odometro: 1500 }, "NEW1A11": { placa: "NEW1A11", lat: -12, lng: -38, data: "2026-11-18 09:01", odometro: 77 } } };
+  const r = await chamar("GET", "/frota/placas");
+  const porPlaca = Object.fromEntries(r.json.data.map(x => [x.placa, x]));
+  assert.equal(porPlaca.ABC1D23.km_ultimo, 1500);
+  assert.equal(porPlaca.ABC1D23.km_fonte, "sascar");
+  assert.equal(porPlaca.ABC1D23.ultima_posicao.lat, -23.5);
+  assert.equal(porPlaca.QQQ0000.km_ultimo, 50);
+  assert.equal(porPlaca.NEW1A11.origem, "sascar");
+  assert.equal(r.json.so_sascar, 1);
+  await esperar();
+  assert.equal(db.gravados.length, 0);
+});

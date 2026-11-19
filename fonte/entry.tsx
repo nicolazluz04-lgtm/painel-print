@@ -2,6 +2,8 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { startBackend, setUser } from "./backend.js";
 import "./mapdata.js";
+import { IMGS } from "./images";
+(window as any).__PRINT_LOGO = IMGS.logo; // usado pela tela de login (claude-shim.js)
 import { startMapBase } from "./mapbase.js";
 import Dashboard from "./app/page";
 import ExportMenu from "./components/ExportMenu";

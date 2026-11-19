@@ -1,6 +1,6 @@
-# Painel Print Socorro
+# Control Tower SOS — Print
 
-Painel de socorro mecânico da Print: ordens de serviço, prestadores, bases, controle de peças, cancelamentos, frota Sascar e mapas.
+Central de socorro mecânico da Print ("Entregando soluções"): ordens de serviço, prestadores, bases, controle de peças, cancelamentos, frota Sascar e mapas.
 
 - **Site:** https://painel-print.vercel.app (principal) · espelho no GitHub Pages: https://nicolazluz04-lgtm.github.io/painel-print/
 - **Banco, login e funções:** Supabase (projeto `painel-print`, região São Paulo)

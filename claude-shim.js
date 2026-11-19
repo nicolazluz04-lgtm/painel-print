@@ -108,6 +108,44 @@
   var INP = "padding:10px;border-radius:8px;border:1px solid #444;background:#0f0f0f;color:#eee;font-size:14px";
   var BTN = "padding:10px;border-radius:8px;border:none;background:#16a34a;color:#fff;font-weight:700;cursor:pointer";
 
+  // ── Tela de login: Control Tower SOS (Print) ──
+  // Fundo: foto em img/fundo-login.jpg, um pouco transparente (véu escuro por cima para o cartão continuar legível).
+  // Enquanto a foto não existir ou não carregar, fica só o fundo verde-escuro.
+  var FOTO_FUNDO = "img/fundo-login.jpg";
+  var FUNDO_BASE = "radial-gradient(ellipse at 20% 0%,rgba(22,163,74,.28),transparent 55%),radial-gradient(ellipse at 100% 100%,rgba(22,163,74,.16),transparent 50%),#070b09";
+  var FUNDO_LOGIN = "background:" + FUNDO_BASE;
+  function aplicarFotoFundo(box) {
+    var img = new Image();
+    img.onload = function () {
+      box.style.background = "linear-gradient(180deg,rgba(4,10,7,.42) 0%,rgba(4,10,7,.55) 55%,rgba(4,10,7,.78) 100%),url('" + FOTO_FUNDO + "') center/cover no-repeat,#070b09";
+    };
+    img.src = FOTO_FUNDO;
+  }
+  function TELA_LOGIN() {
+    var logo = window.__PRINT_LOGO || "";
+    var rot = "display:grid;gap:6px;font-size:12px;font-weight:600;color:#a7b3ad";
+    var inp = "padding:12px 14px;border-radius:10px;border:1px solid #2b3a33;background:#0c1310;color:#eef5f1;font-size:15px;outline:none;min-height:44px;box-sizing:border-box;width:100%";
+    return '' +
+      '<style>.ct-login input:focus{border-color:#22c55e!important;box-shadow:0 0 0 3px rgba(34,197,94,.25)}.ct-login button:disabled{opacity:.7;cursor:wait}</style>' +
+      '<form class="ct-login" style="width:min(400px,100%);box-sizing:border-box;display:grid;gap:16px;padding:32px 28px;border-radius:18px;' +
+        'background:rgba(14,20,17,.86);border:1px solid rgba(255,255,255,.08);box-shadow:0 24px 60px rgba(0,0,0,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font:14px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#eef5f1">' +
+        '<div style="display:grid;justify-items:center;gap:10px;text-align:center;margin-bottom:4px">' +
+          (logo ? '<div style="width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#34e053 0%,#2dc62d 45%,#15803d 100%);' +
+            'box-shadow:inset 0 2px 3px rgba(255,255,255,.6),inset 0 -3px 5px rgba(0,0,0,.35),0 6px 18px rgba(45,198,45,.45);border:1px solid rgba(255,255,255,.35)">' +
+            '<img src="' + logo + '" alt="Print" style="width:46px;height:auto"></div>' : '') +
+          '<div style="font-size:24px;font-weight:800;letter-spacing:.01em">Control Tower SOS</div>' +
+          '<div style="font-size:13px;color:#8fa39a">Central de socorro mecânico da Print</div>' +
+        '</div>' +
+        '<label style="' + rot + '">E-mail<input name=e type=email autocomplete=username placeholder="seu@email.com" required style="' + inp + '"></label>' +
+        '<label style="' + rot + '">Senha<input name=p type=password autocomplete=current-password placeholder="Sua senha" required style="' + inp + '"></label>' +
+        '<label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#a7b3ad;cursor:pointer;min-height:32px"><input id=ver type=checkbox style="width:18px;height:18px;accent-color:#16a34a">Mostrar senha</label>' +
+        '<span id=m role=alert style="color:#f87171;font-size:13px;min-height:1em"></span>' +
+        '<button style="padding:13px;border-radius:10px;border:none;background:#16a34a;color:#fff;font-weight:800;font-size:15px;cursor:pointer;min-height:48px;box-shadow:0 8px 20px rgba(22,163,74,.35)">Entrar</button>' +
+        '<div style="text-align:center;font-size:12px;color:#7d9188">Esqueceu a senha? Fale com um administrador.</div>' +
+      '</form>' +
+      '<div style="position:absolute;left:0;right:0;bottom:20px;text-align:center;font:600 12px system-ui,sans-serif;letter-spacing:.32em;text-transform:uppercase;color:rgba(220,235,227,.7)">Entregando soluções</div>';
+  }
+
   window.__printLogout = async function () { if (sb) await sb.auth.signOut(); location.reload(); };
 
   window.__printTrocarSenha = function () {
@@ -127,12 +165,19 @@
     if (!sb) return;
     ready.then(function () {
       if (session) return;
-      var box = modal('<form style="' + FORM + '"><b>Painel Print — entrar</b><input name=e type=email autocomplete=username placeholder="E-mail" required style="' + INP + '"><input name=p type=password autocomplete=current-password placeholder="Senha" required style="' + INP + '"><span id=m style="color:#f87171;font-size:12px"></span><button style="' + BTN + '">Entrar</button></form>');
-      box.style.background = "#0b0b0b";
-      box.querySelector("form").onsubmit = async function (ev) {
-        ev.preventDefault(); var f = ev.target;
+      document.title = "Control Tower SOS · Entrar";
+      var box = modal(TELA_LOGIN());
+      box.style.cssText += ";" + FUNDO_LOGIN;
+      aplicarFotoFundo(box);
+      var f = box.querySelector("form"), msg = box.querySelector("#m"), btn = f.querySelector("button");
+      box.querySelector("#ver").onchange = function (ev) { f.p.type = ev.target.checked ? "text" : "password"; };
+      f.e.focus();
+      f.onsubmit = async function (ev) {
+        ev.preventDefault();
+        btn.disabled = true; btn.textContent = "Entrando…"; msg.textContent = "";
         var r = await sb.auth.signInWithPassword({ email: f.e.value.trim(), password: f.p.value });
-        if (r.error) box.querySelector("#m").textContent = "E-mail ou senha inválidos."; else location.reload();
+        if (r.error) { msg.textContent = "E-mail ou senha inválidos."; btn.disabled = false; btn.textContent = "Entrar"; f.p.focus(); }
+        else location.reload();
       };
     });
   });

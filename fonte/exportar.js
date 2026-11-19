@@ -76,7 +76,7 @@ export function exportarGerencialPdf(ia) {
   const J = window.jspdf; if (!J || !J.jsPDF) throw { code: "lib" };
   const S = getState(); const doc = new J.jsPDF({ unit: "pt", format: "a4" });
   const W = doc.internal.pageSize.getWidth(); let y = 48;
-  doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.text("Relatório Gerencial — Print Socorro Mecânico", 40, y); y += 18;
+  doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.text("Relatório Gerencial — Control Tower SOS · Print", 40, y); y += 18;
   doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(110); doc.text("Gerado em " + new Date().toLocaleString("pt-BR"), 40, y); y += 20; doc.setTextColor(0);
   const ab = S.ordens.filter(o => !o.fechamento && !o.cancelado).length;
   const total = S.ordens.reduce((t, o) => t + (Number(o.valor) || 0), 0);

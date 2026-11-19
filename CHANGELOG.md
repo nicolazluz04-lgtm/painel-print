@@ -2,6 +2,12 @@
 
 Formato: [versionamento semântico](https://semver.org/lang/pt-BR/) — MAIOR.MENOR.CORREÇÃO.
 
+## [1.9.0] — 19/11/2026
+### Identidade
+- Novo nome: **Control Tower SOS** (aba do navegador, menu lateral, tela de login e PDF gerencial).
+- Tela de login nova: logo Print, nome e subtítulo, campos com rótulo, "Mostrar senha", aviso de erro e a frase "Entregando soluções" no rodapé.
+- Fundo da tela de login preparado para a foto da empresa (img/fundo-login.jpg), um pouco transparente; sem a foto, fica o fundo verde-escuro.
+
 ## [1.8.0] — 19/11/2026
 ### Mapas
 - Dashboard: mapas de Atendimento e Cobertura lado a lado (um embaixo do outro no celular); filtros da Cobertura dentro do próprio cartão.

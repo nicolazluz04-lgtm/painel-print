@@ -20,7 +20,8 @@ export const TIPOS_VEICULO = [
 export function inferTipoVeiculo(modelo?: string, marca?: string, extra?: string): string {
   const t = ((modelo || "") + " " + (marca || "") + " " + (extra || "")).toLowerCase();
   if (t.includes("carreta") || t.includes("reboque") || t.includes("semirreboque") || t.includes("bitrem") || t.includes("rodotrem")) return "carreta";
-  if (t.includes("van") || t.includes("sprinter") || t.includes("ducato") || t.includes("daily") || t.includes("master")) return "van";
+  // Vans e utilitários de carga (palavras inteiras, para "van" não pegar "Vanguard" etc.)
+  if (/\b(van|vans|furg[aã]o|sprinter|ducato|daily|master|boxer|jumper|transit|kombi|fiorino|expert|jumpy|scudo|trafic|vito|hr|bongo|iveco daily)\b/.test(t)) return "van";
   if (t.includes("toco")) return "toco";
   if (t.includes("truck") || t.includes("constellation") || t.includes("cargo") || t.includes("vm 270")) return "truck";
   return "cavalo";

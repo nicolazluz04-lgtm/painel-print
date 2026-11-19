@@ -1,5 +1,6 @@
 import {vehHtml} from "../vehicon";
 import {addBrasil} from "../brmap";
+import { criarEnquadramento } from "@/lib/enquadrar";
 "use client";
 import { BASES, houseHtml } from "@/lib/mapdata";
 import { useEffect, useRef, useState } from "react";
@@ -86,6 +87,7 @@ export default function MapaAtendimento({ ordens, posicoes, veiculos, bases }: {
   const basesRef = useRef<any[]>([]);
   const truckRef = useRef<any[]>([]);
   const roRef = useRef<ResizeObserver | null>(null);
+  const enqRef = useRef<ReturnType<typeof criarEnquadramento> | null>(null);
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
@@ -99,19 +101,23 @@ export default function MapaAtendimento({ ordens, posicoes, veiculos, bases }: {
     try { L = require("leaflet"); } catch { return; }
     const container = containerRef.current as HTMLElement & { _leaflet_id?: number };
     if (container._leaflet_id) {
-      if (mapRef.current) { mapRef.current.invalidateSize(); mapRef.current.setView(CENTER, ZOOM); }
+      enqRef.current?.redimensionou();
       return;
     }
-    mapRef.current = L.map(container, { center: CENTER, zoom: ZOOM, minZoom: 3, maxZoom: 18, zoomControl: true, attributionControl: true });
+    mapRef.current = L.map(container, { center: CENTER, zoom: ZOOM, minZoom: 3, maxZoom: 18, zoomSnap: 0.25, zoomDelta: 0.5, zoomControl: true, attributionControl: true });
     addBrasil(L, mapRef.current);
-    roRef.current = new ResizeObserver(() => {
-      if (!mapRef.current) return;
-      mapRef.current.invalidateSize();
-      mapRef.current.setView(CENTER, ZOOM, { animate: false });
-    });
+    enqRef.current = criarEnquadramento(L, mapRef.current, container);
+    roRef.current = new ResizeObserver(() => { enqRef.current?.redimensionou(); });
     roRef.current.observe(container);
-    return () => { roRef.current?.disconnect(); };
+    return () => { roRef.current?.disconnect(); enqRef.current?.desligar(); };
   }, []);
+
+  // Enquadra nos caminhões parados que têm O.S. aberta (ou no Brasil, se não houver)
+  useEffect(() => {
+    const pos: any = posicoes || {};
+    const pts = ordens.map(o => pos[(o.placa || "").toUpperCase()]).filter((p: any) => p && p.lat != null && p.lng != null).map((p: any) => [Number(p.lat), Number(p.lng)] as [number, number]);
+    enqRef.current?.enquadrar(pts);
+  }, [ordens, posicoes]);
 
   // Camada de caminhões Sascar (verde = rodando, vermelho = em manutenção)
   useEffect(() => {
@@ -214,7 +220,10 @@ export default function MapaAtendimento({ ordens, posicoes, veiculos, bases }: {
           @keyframes mpa-pulse { from {} to {} }
         }
       `}</style>
-      <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
+      <div style={{ position: "relative", width: "100%", height: "100%" }}>
+        <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
+        <button type="button" onClick={() => enqRef.current?.reiniciar()} title="Voltar ao enquadramento automático" style={{ position: "absolute", top: 10, right: 10, zIndex: 500, background: "rgba(12,17,20,.88)", color: "#e8f2ec", border: "1px solid rgba(255,255,255,.18)", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer", minHeight: "var(--alvo, 44px)" }}>Enquadrar</button>
+      </div>
     </>
   );
 }

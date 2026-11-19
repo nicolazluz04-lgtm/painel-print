@@ -2,6 +2,15 @@
 
 Formato: [versionamento semântico](https://semver.org/lang/pt-BR/) — MAIOR.MENOR.CORREÇÃO.
 
+## [1.8.0] — 19/11/2026
+### Mapas
+- Dashboard: mapas de Atendimento e Cobertura lado a lado (um embaixo do outro no celular); filtros da Cobertura dentro do próprio cartão.
+- Enquadramento automático: cada mapa mostra os seus pontos (O.S. abertas no Atendimento, prestadores na Cobertura) ou o Brasil inteiro, do tamanho que o mapa tiver na tela. Depois que a pessoa mexe, o mapa não volta sozinho; o botão "Enquadrar" volta ao automático.
+- Legenda "Segmentos" só aparece quando há prestadores no mapa.
+### Nova O.S.
+- Campo "Tipo de veículo" visível (Cavalo, Truck, Toco, Van, Carreta ou automático pelo modelo), para a figura do cartão sair certa.
+- Reconhece mais modelos de van pelo nome (Sprinter, Master, Ducato, Daily, Boxer, Jumper, Transit, Kombi, Fiorino, Furgão, HR, Bongo…).
+
 ## [1.7.0] — 18/11/2026
 ### Desempenho (teste de carga de 18/11)
 - Atualizações ao vivo por um único canal por usuário (antes eram 11, um por tipo de dado).

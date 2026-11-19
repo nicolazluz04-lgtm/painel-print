@@ -1,5 +1,6 @@
 import {vehHtml} from "../vehicon";
 import {addBrasil} from "../brmap";
+import { criarEnquadramento } from "@/lib/enquadrar";
 "use client";
 import { BASES, houseHtml } from "@/lib/mapdata";
 import { useEffect, useRef } from "react";
@@ -40,6 +41,7 @@ export default function MapaBrasil({ prestadores, bases }: { prestadores: Presta
   const markersRef = useRef<any[]>([]);
   const basesRef = useRef<any[]>([]);
   const roRef = useRef<ResizeObserver | null>(null);
+  const enqRef = useRef<ReturnType<typeof criarEnquadramento> | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined" || !containerRef.current) return;
@@ -47,19 +49,21 @@ export default function MapaBrasil({ prestadores, bases }: { prestadores: Presta
     try { L = require("leaflet"); } catch { return; }
     const container = containerRef.current as HTMLElement & { _leaflet_id?: number };
     if (container._leaflet_id) {
-      if (mapRef.current) { mapRef.current.invalidateSize(); mapRef.current.setView(CENTER, ZOOM, { animate: false }); }
+      enqRef.current?.redimensionou();
       return;
     }
-    mapRef.current = L.map(container, { center: CENTER, zoom: ZOOM, minZoom: 3, maxZoom: 18, zoomControl: true, attributionControl: true });
+    mapRef.current = L.map(container, { center: CENTER, zoom: ZOOM, minZoom: 3, maxZoom: 18, zoomSnap: 0.25, zoomDelta: 0.5, zoomControl: true, attributionControl: true });
     addBrasil(L, mapRef.current);
-    roRef.current = new ResizeObserver(() => {
-      if (!mapRef.current) return;
-      mapRef.current.invalidateSize();
-      mapRef.current.setView(CENTER, ZOOM, { animate: false });
-    });
+    enqRef.current = criarEnquadramento(L, mapRef.current, container);
+    roRef.current = new ResizeObserver(() => { enqRef.current?.redimensionou(); });
     roRef.current.observe(container);
-    return () => { roRef.current?.disconnect(); };
+    return () => { roRef.current?.disconnect(); enqRef.current?.desligar(); };
   }, []);
+
+  // Enquadra nos prestadores do filtro (ou no Brasil, se não houver nenhum com coordenadas)
+  useEffect(() => {
+    enqRef.current?.enquadrar(prestadores.filter(p => p.lat && p.lng).map(p => [Number(p.lat), Number(p.lng)] as [number, number]));
+  }, [prestadores]);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -102,12 +106,13 @@ export default function MapaBrasil({ prestadores, bases }: { prestadores: Presta
     <>
       <style>{`@keyframes mpb-pulse{0%{transform:scale(.6);opacity:.4}100%{transform:scale(2.4);opacity:0}}`}</style>
       <div style={{ position: "relative", width: "100%", height: "100%" }}><div ref={containerRef} style={{ width:"100%", height:"100%" }} />
-      <div style={{ position: "absolute", left: 10, bottom: 10, zIndex: 500, background: "rgba(12,17,20,.88)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 10, padding: "8px 10px", fontSize: 10, color: "#e8f2ec", lineHeight: 1.7 }}>
+      <button type="button" onClick={() => enqRef.current?.reiniciar()} title="Voltar ao enquadramento automático" style={{ position: "absolute", top: 10, right: 10, zIndex: 500, background: "rgba(12,17,20,.88)", color: "#e8f2ec", border: "1px solid rgba(255,255,255,.18)", borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer", minHeight: "var(--alvo, 44px)" }}>Enquadrar</button>
+      {prestadores.some(p => p.lat && p.lng) && <div style={{ position: "absolute", left: 10, bottom: 10, zIndex: 500, background: "rgba(12,17,20,.88)", border: "1px solid rgba(255,255,255,.14)", borderRadius: 10, padding: "8px 10px", fontSize: 10, color: "#e8f2ec", lineHeight: 1.7 }}>
         <div style={{ fontSize: 8.5, letterSpacing: ".12em", textTransform: "uppercase", opacity: .6, marginBottom: 3 }}>Segmentos</div>
         {Array.from(new Map(Object.values(SEG).map(v => [v.nome, v])).values()).filter(v => prestadores.some(p => segOf(p.tipo_servico).nome === v.nome)).map(v => (
           <div key={v.nome} style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 9, height: 9, borderRadius: "50%", background: v.cor, display: "inline-block" }} />{v.nome}<b style={{ marginLeft: "auto", paddingLeft: 10 }}>{prestadores.filter(p => p.lat && p.lng && segOf(p.tipo_servico).nome === v.nome).length}</b></div>
         ))}
-      </div>
+      </div>}
       </div>
     </>
   );

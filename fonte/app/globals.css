@@ -269,3 +269,12 @@ label:has(> input[type=checkbox]), label:has(> input[type=radio]) { min-height: 
 .cartao-dados dt { color: var(--text-muted); }
 .cartao-dados dd { margin: 0; text-align: right; color: var(--text); overflow-wrap: anywhere; }
 .cartao-acoes { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+
+/* Dashboard: mapas de Atendimento e Cobertura lado a lado (um embaixo do outro em telas estreitas) */
+.grade-mapas { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: stretch; }
+@media (min-width: 1100px) { .grade-mapas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.grade-mapas > * { display: flex; flex-direction: column; }
+.mapa-painel { height: 560px; flex: 1 1 auto; min-height: 420px; }
+@media (max-width: 640px) { .mapa-painel { height: 420px; } }
+.barra-filtros-mapa { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 8px 12px; margin-bottom: 12px;
+  border-radius: 10px; background: var(--bg-alt); border: 1px solid var(--border); font-size: 11px; }

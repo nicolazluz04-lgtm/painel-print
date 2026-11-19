@@ -229,15 +229,26 @@
         window.__mapBaseInfo = window.__mapBaseInfo || {};
         window.__mapBaseInfo.status = "ok";
         const G = "https://server.arcgisonline.com/ArcGIS/rest/services/";
-        let okTiles = 0, errTiles = 0, fallback = false;
-        const sat = L.tileLayer(G + "World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, maxNativeZoom: 18, zIndex: 1, attribution: "Imagery \xA9 Esri, Maxar, Earthstar Geographics" }).addTo(map);
-        const ref = L.tileLayer(G + "Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19, maxNativeZoom: 18, zIndex: 2 }).addTo(map);
+        const T = (path, o) => L.tileLayer(G + path + "/MapServer/tile/{z}/{y}/{x}", Object.assign({ maxZoom: 19, maxNativeZoom: 18, zIndex: 1 }, o));
+        const ESTILOS = {
+          mapa: { nome: "Mapa", camadas: () => [T("World_Street_Map", { attribution: "Mapa \xA9 Esri, HERE, Garmin, OpenStreetMap" })] },
+          escuro: { nome: "Escuro", camadas: () => [T("Canvas/World_Dark_Gray_Base", { maxNativeZoom: 16, attribution: "Mapa \xA9 Esri, HERE, Garmin, OpenStreetMap" }), T("Canvas/World_Dark_Gray_Reference", { maxNativeZoom: 16, zIndex: 2 })] },
+          satelite: { nome: "Sat\xE9lite", camadas: () => [T("World_Imagery", { attribution: "Imagery \xA9 Esri, Maxar, Earthstar Geographics" }), T("Reference/World_Boundaries_and_Places", { zIndex: 2 })] }
+        };
+        let okTiles = 0, errTiles = 0, fallback = false, atual = null, grupo = null;
+        const lerEstilo = () => {
+          try {
+            const v = localStorage.getItem("painel:estiloMapa");
+            return ESTILOS[v] ? v : "mapa";
+          } catch (e) {
+            return "mapa";
+          }
+        };
         const usarEmbutido = () => {
           if (fallback) return;
           fallback = true;
           try {
-            map.removeLayer(sat);
-            map.removeLayer(ref);
+            if (grupo) map.removeLayer(grupo);
           } catch (e) {
           }
           layers.forEach((l, i) => {
@@ -258,13 +269,60 @@
           } catch (e) {
           }
         };
-        sat.on("tileload", () => {
-          okTiles++;
-        });
-        sat.on("tileerror", () => {
-          errTiles++;
-          if (!okTiles && errTiles >= 4) usarEmbutido();
-        });
+        const botoes = {};
+        const mostrar = (id) => {
+          if (fallback || id === atual) return;
+          atual = id;
+          try {
+            if (grupo) map.removeLayer(grupo);
+          } catch (e) {
+          }
+          const cs = ESTILOS[id].camadas();
+          cs[0].on("tileload", () => {
+            okTiles++;
+          });
+          cs[0].on("tileerror", () => {
+            errTiles++;
+            if (!okTiles && errTiles >= 4) usarEmbutido();
+          });
+          grupo = L.layerGroup(cs).addTo(map);
+          el.style.background = id === "escuro" ? "#1f2326" : id === "satelite" ? "#0b1a24" : "#aad3df";
+          Object.keys(botoes).forEach((k) => {
+            const on = k === id;
+            botoes[k].setAttribute("aria-pressed", on);
+            botoes[k].style.background = on ? "#16a34a" : "transparent";
+            botoes[k].style.color = on ? "#fff" : "#cfe0d6";
+          });
+        };
+        const Seletor = L.Control.extend({ options: { position: "topleft" }, onAdd: () => {
+          const box = L.DomUtil.create("div", "seletor-mapa");
+          box.setAttribute("role", "group");
+          box.setAttribute("aria-label", "Estilo do mapa");
+          box.style.cssText = "display:flex;gap:2px;padding:3px;border-radius:10px;background:rgba(12,17,20,.88);border:1px solid rgba(255,255,255,.18);box-shadow:0 2px 8px rgba(0,0,0,.3)";
+          Object.keys(ESTILOS).forEach((id) => {
+            const bt = L.DomUtil.create("button", "", box);
+            bt.type = "button";
+            bt.textContent = ESTILOS[id].nome;
+            bt.style.cssText = "border:0;border-radius:7px;padding:4px 10px;font:700 11px system-ui,sans-serif;cursor:pointer;min-height:var(--alvo,36px)";
+            bt.onclick = (ev) => {
+              L.DomEvent.stop(ev);
+              try {
+                localStorage.setItem("painel:estiloMapa", id);
+              } catch (e) {
+              }
+              window.dispatchEvent(new CustomEvent("estilo-mapa", { detail: id }));
+            };
+            botoes[id] = bt;
+          });
+          L.DomEvent.disableClickPropagation(box);
+          L.DomEvent.disableScrollPropagation(box);
+          return box;
+        } });
+        new Seletor().addTo(map);
+        mostrar(lerEstilo());
+        const aoTrocar = (ev) => mostrar(ev.detail);
+        window.addEventListener("estilo-mapa", aoTrocar);
+        map.on("unload", () => window.removeEventListener("estilo-mapa", aoTrocar));
         setTimeout(() => {
           if (!okTiles) usarEmbutido();
         }, 12e3);

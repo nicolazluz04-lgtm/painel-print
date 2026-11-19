@@ -2,6 +2,12 @@
 
 Formato: [versionamento semântico](https://semver.org/lang/pt-BR/) — MAIOR.MENOR.CORREÇÃO.
 
+## [1.10.0] — 19/11/2026
+### Mapas
+- Mapa digital interativo (ruas, rodovias e cidades com nome, como um mapa de navegação) no lugar do satélite.
+- Seletor no canto de cada mapa: Mapa, Escuro ou Satélite. A escolha vale para todos os mapas e fica guardada no navegador.
+- Removido o filtro que invertia as cores do mapa no tema escuro (agora existe o estilo "Escuro" de verdade).
+
 ## [1.9.0] — 19/11/2026
 ### Identidade
 - Novo nome: **Control Tower SOS** (aba do navegador, menu lateral, tela de login e PDF gerencial).

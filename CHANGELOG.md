@@ -6,7 +6,7 @@ Formato: [versionamento semântico](https://semver.org/lang/pt-BR/) — MAIOR.ME
 ### Identidade
 - Novo nome: **Control Tower SOS** (aba do navegador, menu lateral, tela de login e PDF gerencial).
 - Tela de login nova: logo Print, nome e subtítulo, campos com rótulo, "Mostrar senha", aviso de erro e a frase "Entregando soluções" no rodapé.
-- Fundo da tela de login preparado para a foto da empresa (img/fundo-login.jpg), um pouco transparente; sem a foto, fica o fundo verde-escuro.
+- Fundo da tela de login com a foto do caminhão Print (img/fundo-login.jpg), um pouco transparente; no computador o cartão fica à esquerda para o caminhão aparecer.
 
 ## [1.8.0] — 19/11/2026
 ### Mapas

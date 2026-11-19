@@ -117,7 +117,7 @@
   function aplicarFotoFundo(box) {
     var img = new Image();
     img.onload = function () {
-      box.style.background = "linear-gradient(180deg,rgba(4,10,7,.42) 0%,rgba(4,10,7,.55) 55%,rgba(4,10,7,.78) 100%),url('" + FOTO_FUNDO + "') center/cover no-repeat,#070b09";
+      box.style.background = "linear-gradient(180deg,rgba(4,10,7,.42) 0%,rgba(4,10,7,.55) 55%,rgba(4,10,7,.78) 100%),url('" + FOTO_FUNDO + "') 62% center/cover no-repeat,#070b09";
     };
     img.src = FOTO_FUNDO;
   }
@@ -126,7 +126,7 @@
     var rot = "display:grid;gap:6px;font-size:12px;font-weight:600;color:#a7b3ad";
     var inp = "padding:12px 14px;border-radius:10px;border:1px solid #2b3a33;background:#0c1310;color:#eef5f1;font-size:15px;outline:none;min-height:44px;box-sizing:border-box;width:100%";
     return '' +
-      '<style>.ct-login input:focus{border-color:#22c55e!important;box-shadow:0 0 0 3px rgba(34,197,94,.25)}.ct-login button:disabled{opacity:.7;cursor:wait}</style>' +
+      '<style>@media (min-width:900px){.ct-fundo{justify-content:flex-start!important;padding-left:7vw!important}}.ct-login input:focus{border-color:#22c55e!important;box-shadow:0 0 0 3px rgba(34,197,94,.25)}.ct-login button:disabled{opacity:.7;cursor:wait}</style>' +
       '<form class="ct-login" style="width:min(400px,100%);box-sizing:border-box;display:grid;gap:16px;padding:32px 28px;border-radius:18px;' +
         'background:rgba(14,20,17,.86);border:1px solid rgba(255,255,255,.08);box-shadow:0 24px 60px rgba(0,0,0,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font:14px system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#eef5f1">' +
         '<div style="display:grid;justify-items:center;gap:10px;text-align:center;margin-bottom:4px">' +
@@ -168,6 +168,7 @@
       document.title = "Control Tower SOS · Entrar";
       var box = modal(TELA_LOGIN());
       box.style.cssText += ";" + FUNDO_LOGIN;
+      box.classList.add("ct-fundo");
       aplicarFotoFundo(box);
       var f = box.querySelector("form"), msg = box.querySelector("#m"), btn = f.querySelector("button");
       box.querySelector("#ver").onchange = function (ev) { f.p.type = ev.target.checked ? "text" : "password"; };
